@@ -1,0 +1,28 @@
+---
+description: Dev Environment & Tooling
+alwaysApply: false
+---
+# Title: Dev Environment & Tooling
+# Applies: Shell, Tooling
+
+PACKAGE & ENV MGMT (uv)
+- uv add <pkg>
+- uv add --dev <pkg>
+- uv remove <pkg>
+- uv sync
+- uv venv
+- uv python install 3.12
+- uv run <cmd>
+
+SEARCH (ripgrep only)
+- rg "pattern"
+- rg --files -g "*.py"
+
+TEST/LINT/TYPE
+- uv run pytest
+- uv run ruff format .
+- uv run ruff check .        # add --fix when appropriate
+- uv run mypy src/
+
+PRE-COMMIT
+- uv run pre-commit run --all-files

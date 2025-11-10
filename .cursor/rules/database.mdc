@@ -1,0 +1,18 @@
+---
+description: Database Standards
+alwaysApply: false
+---
+# Title: Database Standards
+# Applies: Data, Migrations, Models
+
+PRIMARY KEYS
+- {entity}_id as UUID (e.g., sessions.session_id, leads.lead_id)
+
+FOREIGN KEYS
+- Use {referenced_entity}_id naming
+
+TIMESTAMPS
+- *_at suffixes: created_at, updated_at, started_at
+
+BOOLEANS
+- is_* prefix: is_active, is_connected, is_qualified

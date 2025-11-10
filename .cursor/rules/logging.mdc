@@ -1,0 +1,11 @@
+---
+description: Logging Standards
+alwaysApply: false
+---
+# Title: Logging Standards
+# Applies: Code Generation, Review
+
+- Structured logs with contextual fields.
+- Log I/O boundaries and external calls.
+- Warnings for recoverable issues; errors for failures.
+- Include identifiers (e.g., user_id, correlation_id) when available.

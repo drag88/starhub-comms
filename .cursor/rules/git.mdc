@@ -1,0 +1,12 @@
+---
+description: Commit Standards
+alwaysApply: false
+---
+
+- Conventional Commits only.
+- Format: <type>(<scope>): <subject>
+- Types: feat, fix, docs, style, refactor, test, chore
+
+Examples:
+- feat(auth): add two-factor authentication
+- fix(db): rollback transaction on timeout

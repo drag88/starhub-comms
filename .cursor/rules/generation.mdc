@@ -1,0 +1,28 @@
+---
+description: Code Generation Rules
+alwaysApply: false
+---
+# Title: Code Generation Rules
+# Applies: Code Generation, Inline Edit
+
+PYTHON
+- Use `uv` for dependencies only (no direct pyproject edits).
+- Enforce ruff (format + check), mypy type checking, pytest for tests.
+- Document only when needed to explain “why”.
+- Absolute imports only.
+
+STRUCTURE & LIMITS
+- Respect file/function/class limits from Global Standards.
+- Split files approaching 300–500 lines by responsibility.
+- Split functions approaching 30–50 lines or extract helpers.
+
+PLANS FIRST
+- Produce a concise implementation plan before coding.
+- Note reuse opportunities found via `rg` searches.
+
+PRE-COMPLETE CHECKLIST
+- Precise type hints in all signatures.
+- Domain exceptions for error paths.
+- Logging at I/O boundaries and failures.
+- Tests added/updated and passing.
+- Code formatted and lint-clean.

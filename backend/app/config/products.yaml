@@ -1,0 +1,40 @@
+products:
+  mobile:
+    - id: "mobile_postpaid"
+      name: "Postpaid Plans"
+      category: "Mobile"
+      description: "Contract-based mobile plans with device options"
+    - id: "mobile_prepaid"
+      name: "Prepaid Plans"
+      category: "Mobile"
+      description: "No-contract prepaid mobile services"
+
+  broadband:
+    - id: "broadband_fiber"
+      name: "Fiber Broadband"
+      category: "Broadband"
+      description: "High-speed fiber internet up to 10Gbps"
+    - id: "broadband_10gbps"
+      name: "10Gbps Broadband"
+      category: "Broadband"
+      description: "Ultra-fast 10Gbps fiber broadband"
+
+  entertainment:
+    - id: "entertainment_tv"
+      name: "TV+ Entertainment"
+      category: "Entertainment"
+      description: "Streaming and cable TV services"
+    - id: "entertainment_sports"
+      name: "Sports+"
+      category: "Entertainment"
+      description: "Premium sports content (Premier League, Cricket)"
+
+  bundles:
+    - id: "bundle_homehub"
+      name: "HomeHub"
+      category: "Bundle"
+      description: "Broadband + TV bundle"
+    - id: "bundle_homehub_plus"
+      name: "HomeHub+"
+      category: "Bundle"
+      description: "Premium bundle with broadband, TV, and streaming"

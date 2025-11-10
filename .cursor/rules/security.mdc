@@ -1,0 +1,13 @@
+---
+description:  Security Requirements
+alwaysApply: false
+---
+# Title: Security Requirements
+# Applies: Code Generation, Review
+
+- No secrets in code; load via typed settings/env.
+- Validate all external inputs (Pydantic models preferred).
+- Parameterized queries only.
+- Hash passwords with bcrypt; tokens via `secrets`.
+- HTTPS for all external communications.
+- Structured logging for security events.

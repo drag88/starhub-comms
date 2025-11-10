@@ -1,0 +1,16 @@
+---
+description: Testing Rules
+alwaysApply: false
+---
+# Title: Testing Rules
+# Applies: Testing
+
+- Follow TDD loop rigorously.
+- Test real production code paths; avoid test-only logic.
+- Unit, integration, e2e; tests live next to code.
+- Shared fixtures in `conftest.py`.
+- Coverage ≥ 80% with focus on core flows.
+
+Commands:
+- uv run pytest
+- uv run pytest --cov=src --cov-report=html

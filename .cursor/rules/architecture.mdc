@@ -1,0 +1,36 @@
+---
+description: Architecture & Principles
+alwaysApply: false
+---
+# Applies: Planning, Code Generation
+
+- KISS first.
+- YAGNI for speculative features.
+- DRY: single authoritative place for logic; extract utilities.
+- SOLID focus:
+  - Single Responsibility for modules/classes/functions.
+  - Open/Closed via composition/configuration.
+  - Dependency Inversion to abstractions.
+- Fail Fast with upfront validation.
+
+Recommended layout:
+src/project/
+  __init__.py
+  main.py
+  tests/test_main.py
+  conftest.py
+  database/
+    __init__.py
+    connection.py
+    models.py
+    tests/
+      test_connection.py
+      test_models.py
+  features/
+    user_management/
+      __init__.py
+      handlers.py
+      validators.py
+      tests/
+        test_handlers.py
+        test_validators.py

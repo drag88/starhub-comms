@@ -1,0 +1,139 @@
+cohorts:
+  service_based:
+    - id: "mobile_only"
+      name: "Mobile Only Customers"
+      description: "Customers with only mobile services"
+      category: "Service-Based"
+      target_products:
+        - "mobile_postpaid"
+
+    - id: "broadband_only"
+      name: "Broadband Only Customers"
+      description: "Customers with only broadband services"
+      category: "Service-Based"
+      target_products:
+        - "broadband_fiber"
+
+    - id: "bundle_customers"
+      name: "Bundle Customers"
+      description: "Customers with multiple service bundles"
+      category: "Service-Based"
+      target_products:
+        - "bundle_homehub"
+
+    - id: "entertainment_subscribers"
+      name: "Entertainment Subscribers"
+      description: "Customers with TV+ or Sports+ subscriptions"
+      category: "Service-Based"
+      target_products:
+        - "entertainment_tv"
+
+  value_based:
+    - id: "high_value"
+      name: "High-Value Customers"
+      description: "Customers spending >$150/month"
+      category: "Value-Based"
+      target_products:
+        - "mobile_postpaid"
+        - "broadband_fiber"
+
+    - id: "medium_value"
+      name: "Medium-Value Customers"
+      description: "Customers spending $80-$150/month"
+      category: "Value-Based"
+      target_products:
+        - "mobile_postpaid"
+        - "broadband_fiber"
+
+    - id: "low_value"
+      name: "Low-Value Customers"
+      description: "Customers spending <$80/month"
+      category: "Value-Based"
+      target_products:
+        - "mobile_postpaid"
+
+    - id: "premium_segment"
+      name: "Premium Segment"
+      description: "Customers on premium plans (10Gbps, unlimited data)"
+      category: "Value-Based"
+      target_products:
+        - "broadband_fiber"
+        - "broadband_10gbps"
+
+  demographic:
+    - id: "students"
+      name: "Students"
+      description: "University and college students"
+      category: "Demographic"
+      target_products:
+        - "mobile_postpaid"
+
+    - id: "families"
+      name: "Families"
+      description: "Family households with multiple lines"
+      category: "Demographic"
+      target_products:
+        - "mobile_postpaid"
+        - "bundle_homehub"
+
+    - id: "seniors"
+      name: "Seniors"
+      description: "Customers aged 60+ years"
+      category: "Demographic"
+      target_products:
+        - "mobile_postpaid"
+        - "broadband_fiber"
+
+    - id: "young_professionals"
+      name: "Young Professionals"
+      description: "Working professionals aged 25-35"
+      category: "Demographic"
+      target_products:
+        - "mobile_postpaid"
+
+  behavioral:
+    - id: "new_customers"
+      name: "New Customers"
+      description: "Customers within first 3 months of service"
+      category: "Behavioral"
+      target_products:
+        - "mobile_postpaid"
+
+    - id: "loyal_customers"
+      name: "Loyal Customers"
+      description: "Customers with 2+ years of service"
+      category: "Behavioral"
+      target_products:
+        - "mobile_postpaid"
+        - "broadband_fiber"
+        - "bundle_homehub"
+
+    - id: "at_risk_churn"
+      name: "At-Risk for Churn"
+      description: "Customers showing churn indicators"
+      category: "Behavioral"
+      target_products:
+        - "mobile_postpaid"
+
+    - id: "high_data_users"
+      name: "High Data Users"
+      description: "Customers consuming >100GB/month"
+      category: "Behavioral"
+      target_products:
+        - "mobile_postpaid"
+        - "broadband_fiber"
+
+    - id: "sports_fans"
+      name: "Sports Fans"
+      description: "Customers with Sports+ or frequent sports content viewing"
+      category: "Behavioral"
+      target_products:
+        - "entertainment_tv"
+
+    - id: "tech_enthusiasts"
+      name: "Tech Enthusiasts"
+      description: "Early adopters of new services and features"
+      category: "Behavioral"
+      target_products:
+        - "broadband_10gbps"
+        - "mobile_postpaid"

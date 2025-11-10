@@ -1,0 +1,54 @@
+---
+alwaysApply: true
+---
+
+CRITICAL WORKFLOW
+- Start in plan mode: write an implementation plan before coding.
+- Use `venv_linux` for all Python command execution.
+- Perform research before implementation.
+
+CODE GENERATION LIMITS
+- Files ≤ 500 lines; split earlier if approaching.
+- Functions ≤ 50 lines; single responsibility.
+- Classes ≤ 100 lines; one concept per class.
+- Max line length 100 chars (ruff enforced).
+- Use type hints on every function signature.
+- Use absolute imports only (no relative imports).
+- Use `uv` for package management; never edit `pyproject.toml` directly.
+
+STYLE & NAMING
+- snake_case for functions/variables, PascalCase for classes, UPPER_SNAKE_CASE for constants.
+- Private members start with a leading underscore.
+- Prefer simple, descriptive names and shallow logic.
+
+DRY ENFORCEMENT
+- Search the codebase with `rg` for similar logic before writing new code.
+- Refactor or extract shared utilities instead of duplicating logic.
+- Update existing call sites to use shared utilities when appropriate.
+
+TEST-DRIVEN DEVELOPMENT
+- Write test → see it fail → minimal code to pass → refactor → repeat.
+- Test production code paths; avoid test-only mock implementations.
+- Keep tests next to code; shared fixtures in `conftest.py`.
+- Target ≥ 80% coverage with emphasis on critical paths.
+
+ERROR HANDLING
+- Use domain-specific exception classes.
+- Validate early and fail fast with clear errors.
+- Return structured error info from boundaries.
+
+GIT & BRANCHING
+- Branches: main (prod), feature/*, fix/*, docs/*, refactor/*.
+- Commits must follow Conventional Commit format (see commits.mdc).
+
+NON-NEGOTIABLES
+- Never commit secrets.
+- Use HTTPS for external calls.
+- Parameterize all DB queries.
+- Hash passwords with bcrypt.
+- Generate tokens with `secrets`.
+
+HOUSEKEEPING
+- Make scripts executable.
+- Remove nonessential comments and docstrings; keep only what explains “why”.
+- Prefer small, cohesive modules grouped by feature.

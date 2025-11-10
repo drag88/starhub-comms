@@ -1,0 +1,44 @@
+objectives:
+  - id: "promotion"
+    name: "Promotion"
+    description: "Promote new products, services, or limited-time offers"
+    typical_channels:
+      - email
+      - sms
+      - push
+
+  - id: "retention"
+    name: "Retention"
+    description: "Retain at-risk customers and prevent churn"
+    typical_channels:
+      - email
+      - sms
+
+  - id: "upsell"
+    name: "Upsell"
+    description: "Encourage customers to upgrade to higher-tier plans"
+    typical_channels:
+      - email
+      - push
+
+  - id: "cross_sell"
+    name: "Cross-Sell"
+    description: "Promote complementary products to existing customers"
+    typical_channels:
+      - email
+      - push
+
+  - id: "service_update"
+    name: "Service Update"
+    description: "Inform customers about service changes or enhancements"
+    typical_channels:
+      - email
+      - sms
+      - push
+
+  - id: "billing"
+    name: "Billing Notification"
+    description: "Billing reminders, payment confirmations, and account updates"
+    typical_channels:
+      - email
+      - sms
