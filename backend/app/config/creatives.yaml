@@ -1,0 +1,48 @@
+channels:
+  email_header:
+    width: 600
+    height: 400
+    aspect_ratio: "3:2"
+    max_file_size_kb: 200
+    format: "JPEG"
+    dpi: 72
+  push_header:
+    width: 1200
+    height: 628
+    aspect_ratio: "2:1"
+    max_file_size_kb: 100
+    format: "JPEG"
+    dpi: 72
+
+brand_guidelines:
+  primary_color: "#00D964"
+  logo_position: "top-left"
+  logo_size_px: 80
+  font_family: "StarHub branded fonts"
+  style_preferences:
+    - "professional lifestyle photography"
+    - "clean modern design"
+    - "warm natural lighting"
+
+model_config:
+  seedream_4:
+    model_name: "seedream-4-0-250828"  # BytePlus ModelArk SeeDream 4.0
+    num_inference_steps: 28
+    guidance_scale: 3.5
+    num_images: 1
+    enable_safety_checker: true
+    output_format: "jpeg"
+
+quality_criteria:
+  brand_compliance:
+    - "StarHub green #00D964 present"
+    - "Star logo visible top-left"
+    - "Professional quality"
+  channel_compliance:
+    - "Correct dimensions"
+    - "File size within limits"
+    - "Aspect ratio maintained"
+  visual_quality:
+    - "High resolution (no pixelation)"
+    - "Clear text rendering"
+    - "Appropriate composition"

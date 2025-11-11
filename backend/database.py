@@ -1,16 +1,18 @@
 """
 Database configuration and session management for StarHub Customer Communications Generator.
 """
-from typing import Generator
+
+import os
+import pathlib
+from collections.abc import Generator
+
+from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, Session
-import os
-from dotenv import load_dotenv
-import pathlib
+from sqlalchemy.orm import Session, sessionmaker
 
 # Load environment variables from backend/.env
-env_path = pathlib.Path(__file__).parent / '.env'
+env_path = pathlib.Path(__file__).parent / ".env"
 load_dotenv(dotenv_path=env_path)
 
 # Database URL from environment or default to SQLite
@@ -22,7 +24,7 @@ if DATABASE_URL.startswith("sqlite"):
     engine = create_engine(
         DATABASE_URL,
         connect_args={"check_same_thread": False},
-        echo=False  # Set to True for SQL debugging
+        echo=False,  # Set to True for SQL debugging
     )
 else:
     engine = create_engine(DATABASE_URL, echo=False)
@@ -61,12 +63,6 @@ def init_db() -> None:
     It should be called on application startup.
     """
     # Import all models to ensure they are registered with Base
-    from app.models import (
-        Campaign,
-        GeneratedCommunication,
-        ErrorLog,
-        PromotionUpload
-    )
 
     # Create all tables
     Base.metadata.create_all(bind=engine)

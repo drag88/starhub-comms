@@ -1,9 +1,12 @@
 """
 Generated Communication model for AI-generated communication variations.
 """
+
 from datetime import datetime
-from sqlalchemy import Column, Integer, Text, Boolean, DateTime, ForeignKey, CheckConstraint, Index
+
+from sqlalchemy import Boolean, CheckConstraint, Column, DateTime, ForeignKey, Index, Integer, Text
 from sqlalchemy.orm import relationship
+
 from database import Base
 
 
@@ -28,7 +31,9 @@ class GeneratedCommunication(Base):
     __tablename__ = "generated_communications"
 
     communication_id = Column(Integer, primary_key=True, autoincrement=True)
-    campaign_id = Column(Integer, ForeignKey("campaigns.campaign_id", ondelete="CASCADE"), nullable=False)
+    campaign_id = Column(
+        Integer, ForeignKey("campaigns.campaign_id", ondelete="CASCADE"), nullable=False
+    )
     variation_number = Column(Integer, nullable=False)
     communication_text = Column(Text, nullable=False)
     recommendation_score = Column(Integer, nullable=False)
@@ -45,8 +50,7 @@ class GeneratedCommunication(Base):
     # Table constraints
     __table_args__ = (
         CheckConstraint(
-            "variation_number >= 1 AND variation_number <= 5",
-            name="check_variation_number_range"
+            "variation_number >= 1 AND variation_number <= 5", name="check_variation_number_range"
         ),
         Index("idx_gencomm_campaign", "campaign_id"),
         Index("idx_gencomm_score", "recommendation_score", postgresql_using="btree"),

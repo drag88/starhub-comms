@@ -1,24 +1,26 @@
 """
 Utility API endpoints for configuration data and health checks.
 """
-from fastapi import APIRouter, HTTPException, status
-from typing import Dict, List, Any
-import logging
 
-from app.services.config_loader import (
-    get_cohorts,
-    get_products,
-    get_objectives,
-    get_channel_constraints,
-)
+import logging
+from typing import Any
+
+from fastapi import APIRouter, HTTPException, status
+
 from app.schemas.common import HealthResponse
+from app.services.config_loader import (
+    get_channel_constraints,
+    get_cohorts,
+    get_objectives,
+    get_products,
+)
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/v1", tags=["utilities"])
 
 
-@router.get("/cohorts", response_model=Dict[str, Any])
+@router.get("/cohorts", response_model=dict[str, Any])
 def list_cohorts():
     """
     List all available customer cohorts with characteristics.
@@ -40,28 +42,25 @@ def list_cohorts():
         all_cohorts = []
         for category, cohorts in cohorts_config.items():
             for cohort in cohorts:
-                all_cohorts.append({
-                    **cohort,
-                    "category": category
-                })
+                all_cohorts.append({**cohort, "category": category})
 
         logger.info(f"Retrieved {len(all_cohorts)} cohorts across {len(cohorts_config)} categories")
 
         return {
             "cohorts": all_cohorts,
             "total": len(all_cohorts),
-            "categories": list(cohorts_config.keys())
+            "categories": list(cohorts_config.keys()),
         }
 
     except Exception as e:
         logger.error(f"Failed to retrieve cohorts: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to retrieve cohorts: {str(e)}"
+            detail=f"Failed to retrieve cohorts: {str(e)}",
         )
 
 
-@router.get("/products", response_model=Dict[str, Any])
+@router.get("/products", response_model=dict[str, Any])
 def list_products():
     """
     List all product lines from configuration.
@@ -84,28 +83,27 @@ def list_products():
         all_products = []
         for category, products in products_config.items():
             for product in products:
-                all_products.append({
-                    **product,
-                    "category": category
-                })
+                all_products.append({**product, "category": category})
 
-        logger.info(f"Retrieved {len(all_products)} products across {len(products_config)} categories")
+        logger.info(
+            f"Retrieved {len(all_products)} products across {len(products_config)} categories"
+        )
 
         return {
             "products": all_products,
             "total": len(all_products),
-            "categories": list(products_config.keys())
+            "categories": list(products_config.keys()),
         }
 
     except Exception as e:
         logger.error(f"Failed to retrieve products: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to retrieve products: {str(e)}"
+            detail=f"Failed to retrieve products: {str(e)}",
         )
 
 
-@router.get("/objectives", response_model=Dict[str, Any])
+@router.get("/objectives", response_model=dict[str, Any])
 def list_objectives():
     """
     List supported communication objectives.
@@ -125,20 +123,17 @@ def list_objectives():
 
         logger.info(f"Retrieved {len(objectives)} objectives")
 
-        return {
-            "objectives": objectives,
-            "total": len(objectives)
-        }
+        return {"objectives": objectives, "total": len(objectives)}
 
     except Exception as e:
         logger.error(f"Failed to retrieve objectives: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to retrieve objectives: {str(e)}"
+            detail=f"Failed to retrieve objectives: {str(e)}",
         )
 
 
-@router.get("/channels", response_model=Dict[str, Any])
+@router.get("/channels", response_model=dict[str, Any])
 def list_channels():
     """
     List supported communication channels with constraints.
@@ -157,7 +152,7 @@ def list_channels():
         channels = {
             "email": get_channel_constraints("email"),
             "sms": get_channel_constraints("sms"),
-            "push": get_channel_constraints("push")
+            "push": get_channel_constraints("push"),
         }
 
         logger.info("Retrieved channel constraints for all channels")
@@ -165,14 +160,14 @@ def list_channels():
         return {
             "channels": channels,
             "total": len(channels),
-            "supported_channels": list(channels.keys())
+            "supported_channels": list(channels.keys()),
         }
 
     except Exception as e:
         logger.error(f"Failed to retrieve channel constraints: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to retrieve channel constraints: {str(e)}"
+            detail=f"Failed to retrieve channel constraints: {str(e)}",
         )
 
 
@@ -194,6 +189,7 @@ def health_check():
     try:
         # Test database connectivity
         from database import SessionLocal
+
         db = SessionLocal()
         try:
             db.execute("SELECT 1")
@@ -217,6 +213,7 @@ def health_check():
         # Test generation service
         try:
             from app.services.generation_service import GenerationService
+
             service = GenerationService()
             generation_status = "ready"
         except Exception as e:
@@ -238,8 +235,8 @@ def health_check():
             services={
                 "generation": generation_status,
                 "scoring": "ready",  # Always ready (no external dependencies)
-                "config": config_status
-            }
+                "config": config_status,
+            },
         )
 
     except Exception as e:
@@ -248,15 +245,11 @@ def health_check():
             status="unhealthy",
             version="1.0.0",
             database="unknown",
-            services={
-                "generation": "unknown",
-                "scoring": "unknown",
-                "config": "unknown"
-            }
+            services={"generation": "unknown", "scoring": "unknown", "config": "unknown"},
         )
 
 
-@router.get("/info", response_model=Dict[str, Any])
+@router.get("/info", response_model=dict[str, Any])
 def get_api_info():
     """
     Get API information and capabilities.
@@ -270,9 +263,21 @@ def get_api_info():
         "description": "AI-powered multi-channel customer communications with recommendation scoring",
         "capabilities": {
             "channels": ["email", "sms", "push"],
-            "objectives": ["promotion", "retention", "upsell", "cross_sell", "service_update", "billing"],
+            "objectives": [
+                "promotion",
+                "retention",
+                "upsell",
+                "cross_sell",
+                "service_update",
+                "billing",
+            ],
             "variations_per_campaign": 5,
-            "scoring_pillars": ["channel_best_practices", "cohort_alignment", "objective_effectiveness", "compliance_safety"]
+            "scoring_pillars": [
+                "channel_best_practices",
+                "cohort_alignment",
+                "objective_effectiveness",
+                "compliance_safety",
+            ],
         },
         "endpoints": {
             "campaigns": "/api/v1/campaigns",
@@ -283,6 +288,6 @@ def get_api_info():
             "objectives": "/api/v1/objectives",
             "channels": "/api/v1/channels",
             "health": "/api/v1/health",
-            "documentation": "/docs"
-        }
+            "documentation": "/docs",
+        },
     }

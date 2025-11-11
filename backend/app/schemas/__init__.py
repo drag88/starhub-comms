@@ -1,25 +1,33 @@
 """
 Pydantic schemas for API requests and responses.
 """
+
 from app.schemas.campaign import (
+    CampaignCreate,
+    CampaignResponse,
+    CampaignUpdate,
     CustomizationOptions,
     PromotionDetails,
-    CampaignCreate,
-    CampaignUpdate,
-    CampaignResponse,
-)
-from app.schemas.communication import (
-    ScoreBreakdown,
-    CommunicationResponse,
-    GenerationResponse,
-    CommunicationUpdate,
-    RegenerateRequest,
 )
 from app.schemas.common import (
-    HealthResponse,
     ErrorResponse,
-    PaginatedResponse,
+    HealthResponse,
     MessageResponse,
+    PaginatedResponse,
+)
+from app.schemas.communication import (
+    CommunicationResponse,
+    CommunicationUpdate,
+    GenerationResponse,
+    RegenerateRequest,
+    ScoreBreakdown,
+)
+from app.schemas.creative import (
+    ChannelType,
+    CreativeGenerationRequest,
+    CreativeListResponse,
+    CreativeSelectionRequest,
+    GeneratedCreativeResponse,
 )
 
 __all__ = [
@@ -35,6 +43,12 @@ __all__ = [
     "GenerationResponse",
     "CommunicationUpdate",
     "RegenerateRequest",
+    # Creative schemas
+    "ChannelType",
+    "CreativeGenerationRequest",
+    "GeneratedCreativeResponse",
+    "CreativeListResponse",
+    "CreativeSelectionRequest",
     # Common schemas
     "HealthResponse",
     "ErrorResponse",

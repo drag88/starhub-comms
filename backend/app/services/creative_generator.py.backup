@@ -1,0 +1,586 @@
+"""
+Creative image generation service using SeeDream 4.0 AI model.
+
+This service handles the generation of campaign creative images for email
+headers and push notification headers, following StarHub brand guidelines.
+"""
+
+import os
+import logging
+from typing import Dict, Any, Optional
+from datetime import datetime
+import json
+import httpx
+import aiofiles
+from PIL import Image
+from io import BytesIO
+
+try:
+    import fal_client
+except ImportError:
+    fal_client = None
+
+from sqlalchemy.orm import Session
+from app.services.config_loader import (
+    get_channel_specs,
+    get_brand_guidelines,
+    get_model_config,
+)
+from app.models.creative import GeneratedCreative
+
+logger = logging.getLogger(__name__)
+
+
+class CreativeGenerator:
+    """
+    Generate campaign creative images using SeeDream 4.0.
+
+    This class handles the low-level image generation using the fal.ai API
+    with the SeeDream 4.0 (Flux Pro) model.
+    """
+
+    def __init__(self, api_key: Optional[str] = None):
+        """
+        Initialize creative generator with FAL API key.
+
+        Args:
+            api_key: FAL API key (optional, will use FAL_KEY env var if not provided)
+
+        Raises:
+            ValueError: If FAL_KEY not found in environment
+            ImportError: If fal_client library not installed
+        """
+        if fal_client is None:
+            raise ImportError("fal_client library not installed. Run: uv add fal-client")
+
+        self.api_key = api_key or os.getenv("FAL_KEY")
+        if not self.api_key:
+            raise ValueError("FAL_KEY not found in environment variables")
+
+        self.logger = logging.getLogger(self.__class__.__name__)
+        self.logger.info("CreativeGenerator initialized with SeeDream 4.0")
+
+    def build_prompt(
+        self,
+        channel: str,
+        visual_concept: str,
+        campaign_data: Dict[str, Any],
+        headline: Optional[str] = None,
+        offer_details: Optional[str] = None,
+        partner_logos: Optional[list] = None,
+        style: Optional[str] = None,
+    ) -> str:
+        """
+        Build detailed prompt for image generation.
+
+        Incorporates channel specifications, brand guidelines, and campaign details
+        to create a comprehensive prompt for the AI model.
+
+        Args:
+            channel: Channel type (email_header or push_header)
+            visual_concept: Description of desired imagery
+            campaign_data: Campaign configuration data
+            headline: Optional headline text to display
+            offer_details: Optional pricing/offer text
+            partner_logos: Optional list of partner logos to include
+            style: Optional style override (uses brand default if not provided)
+
+        Returns:
+            Complete prompt string for image generation
+        """
+        channel_specs = get_channel_specs(channel)
+        brand = get_brand_guidelines()
+
+        prompt_parts = [
+            f"Create a StarHub {channel.replace('_', ' ')} creative image",
+            f"({channel_specs['width']}x{channel_specs['height']}px, "
+            f"{channel_specs['aspect_ratio']} aspect ratio)",
+            f"featuring {visual_concept}.",
+        ]
+
+        # Add brand elements
+        prompt_parts.append(
+            f"Use StarHub brand green ({brand['primary_color']}) prominently in the design."
+        )
+        prompt_parts.append(
+            f"Include the StarHub star logo in the {brand['logo_position']} corner."
+        )
+
+        # Add text elements
+        if headline:
+            prompt_parts.append(
+                f'Display the headline "{headline}" in large, bold text using brand green.'
+            )
+        if offer_details:
+            prompt_parts.append(f'Show the offer "{offer_details}" prominently.')
+        if partner_logos:
+            prompt_parts.append(f"Include {', '.join(partner_logos)} logos in the design.")
+
+        # Style guidance
+        style_text = style or brand["style_preferences"][0]
+        prompt_parts.append(
+            f"Use {style_text} aesthetic with clean, modern composition and high visual quality."
+        )
+
+        # Professional finish
+        prompt_parts.append(
+            "Ensure professional marketing quality suitable for StarHub brand communications."
+        )
+
+        prompt = " ".join(prompt_parts)
+        self.logger.info(f"Built prompt for {channel}: {prompt[:100]}...")
+
+        return prompt
+
+    def generate_image(self, prompt: str, channel: str) -> Dict[str, Any]:
+        """
+        Generate image using SeeDream 4.0 API.
+
+        Args:
+            prompt: Complete image generation prompt
+            channel: Channel type for dimension specs
+
+        Returns:
+            dict with 'url' (image URL) and 'metadata' (generation details)
+
+        Raises:
+            Exception: If image generation fails
+        """
+        channel_specs = get_channel_specs(channel)
+        model_config = get_model_config("seedream_4")
+
+        try:
+            self.logger.info(f"Generating image for {channel} channel...")
+
+            # Call fal.ai API with SeeDream 4.0 (Flux Pro)
+            result = fal_client.subscribe(
+                model_config["model_name"],
+                arguments={
+                    "prompt": prompt,
+                    "image_size": {
+                        "width": channel_specs["width"],
+                        "height": channel_specs["height"],
+                    },
+                    "num_inference_steps": model_config["num_inference_steps"],
+                    "guidance_scale": model_config["guidance_scale"],
+                    "num_images": model_config["num_images"],
+                    "enable_safety_checker": model_config["enable_safety_checker"],
+                    "output_format": model_config["output_format"],
+                },
+                with_logs=False,
+            )
+
+            image_url = result["images"][0]["url"]
+            metadata = {
+                "width": result["images"][0].get("width", channel_specs["width"]),
+                "height": result["images"][0].get("height", channel_specs["height"]),
+                "content_type": result["images"][0].get("content_type", "image/jpeg"),
+            }
+
+            self.logger.info(f"Image generated successfully: {image_url[:50]}...")
+
+            return {"url": image_url, "metadata": metadata}
+
+        except Exception as e:
+            self.logger.error(f"Image generation failed: {e}")
+            raise
+
+
+async def save_image(
+    image_url: str,
+    campaign_id: int,
+    channel: str,
+    variant: int,
+    static_dir: str = "backend/static/creatives",
+) -> Dict[str, str]:
+    """
+    Download and save image from URL to local file system.
+
+    Args:
+        image_url: URL of generated image
+        campaign_id: Campaign ID for filename
+        channel: Channel type for filename
+        variant: Variant number (1-3)
+        static_dir: Directory to save images (default: backend/static/creatives)
+
+    Returns:
+        dict with 'filename' and 'url' keys
+
+    Raises:
+        Exception: If download or save fails
+    """
+    timestamp = datetime.utcnow().strftime("%Y%m%d%H%M%S")
+    filename = f"{campaign_id}_{channel}_{variant}_{timestamp}.jpg"
+    filepath = os.path.join(static_dir, filename)
+
+    # Ensure directory exists
+    os.makedirs(static_dir, exist_ok=True)
+
+    try:
+        # Download image
+        async with httpx.AsyncClient(timeout=30.0) as client:
+            response = await client.get(image_url)
+            response.raise_for_status()
+            image_data = response.content
+
+        # Validate image with Pillow
+        img = Image.open(BytesIO(image_data))
+        channel_specs = get_channel_specs(channel)
+
+        if img.width != channel_specs["width"] or img.height != channel_specs["height"]:
+            logger.warning(
+                f"Image dimensions {img.width}x{img.height} don't match "
+                f"expected {channel_specs['width']}x{channel_specs['height']}"
+            )
+
+        # Save image
+        async with aiofiles.open(filepath, "wb") as f:
+            await f.write(image_data)
+
+        # Return relative URL for static serving
+        relative_url = f"/static/creatives/{filename}"
+
+        logger.info(f"Saved image: {filename} ({len(image_data)} bytes)")
+
+        return {"filename": filename, "url": relative_url}
+
+    except Exception as e:
+        logger.error(f"Failed to save image: {e}")
+        raise
+
+
+def score_creative(
+    image_url: str,
+    prompt: str,
+    channel: str,
+    campaign_type: str,
+    generation_params: Dict[str, Any],
+) -> Dict[str, Any]:
+    """
+    Score generated creative using heuristic algorithm.
+
+    Args:
+        image_url: URL of generated image
+        prompt: Prompt used for generation
+        channel: Channel type
+        campaign_type: Campaign type
+        generation_params: Parameters used for generation
+
+    Returns:
+        Dictionary containing:
+            - score: Overall score (0-100)
+            - reasoning: Natural language explanation
+            - breakdown: Detailed scoring breakdown by category
+
+    Scoring Breakdown:
+        - Brand compliance (40 points): Brand color, logo, style adherence
+        - Channel specs (30 points): Correct dimensions, format, text legibility
+        - Visual quality (20 points): Composition, lighting, professional appearance
+        - Prompt adherence (10 points): Matches requested visual concept
+
+    Example:
+        >>> score = score_creative(
+        ...     image_url="https://...",
+        ...     prompt="Create a StarHub email header...",
+        ...     channel="email_header",
+        ...     campaign_type="promotional",
+        ...     generation_params={"model": "seedream-4", "style": "cinematic"}
+        ... )
+        >>> print(score["score"])
+        85
+    """
+    logger.info(f"Scoring creative for channel={channel}, campaign_type={campaign_type}")
+
+    # Initialize scores
+    brand_score = 40
+    channel_score = 30
+    quality_score = 20
+    adherence_score = 10
+
+    reasoning_parts = []
+
+    # Brand Compliance (40 points)
+    # Check if prompt contains brand elements
+    if "#00D964" in prompt or "StarHub brand green" in prompt:
+        reasoning_parts.append(" Brand color specified")
+    else:
+        brand_score -= 10
+        reasoning_parts.append("� Brand color not explicitly specified")
+
+    if "StarHub star logo" in prompt or "logo" in prompt.lower():
+        reasoning_parts.append(" Logo placement included")
+    else:
+        brand_score -= 10
+        reasoning_parts.append("� Logo placement not specified")
+
+    if any(word in prompt.lower() for word in ["professional", "modern", "clean"]):
+        reasoning_parts.append(" Brand style guidelines followed")
+    else:
+        brand_score -= 10
+        reasoning_parts.append("� Brand style keywords missing")
+
+    # Channel Specs (30 points)
+    # Check for channel-appropriate specifications
+    channel_keywords = {
+        "email_header": ["600", "16:9", "email"],
+        "push_header": ["1200", "628", "2:1", "push"]
+    }
+
+    if channel in channel_keywords:
+        keywords_found = sum(1 for kw in channel_keywords[channel] if kw in prompt)
+        if keywords_found >= 2:
+            reasoning_parts.append(" Channel specifications correctly applied")
+        else:
+            channel_score -= 10
+            reasoning_parts.append("� Channel specifications incomplete")
+
+    if "text" in prompt.lower() or "headline" in prompt.lower():
+        reasoning_parts.append(" Text/headline considerations included")
+    else:
+        channel_score -= 5
+        reasoning_parts.append("� Text legibility not emphasized")
+
+    # Visual Quality (20 points)
+    # Check for quality indicators in prompt
+    quality_keywords = ["lighting", "composition", "photography", "style"]
+    quality_mentions = sum(1 for kw in quality_keywords if kw in prompt.lower())
+
+    if quality_mentions >= 2:
+        reasoning_parts.append(" Strong visual quality direction")
+    elif quality_mentions == 1:
+        quality_score -= 5
+        reasoning_parts.append("~ Moderate visual quality direction")
+    else:
+        quality_score -= 10
+        reasoning_parts.append("� Limited visual quality guidance")
+
+    # Prompt Adherence (10 points)
+    # Check if prompt is well-structured and detailed
+    prompt_length = len(prompt.split())
+    if prompt_length >= 40:
+        reasoning_parts.append(" Detailed, comprehensive prompt")
+    elif prompt_length >= 25:
+        adherence_score -= 3
+        reasoning_parts.append("~ Adequate prompt detail")
+    else:
+        adherence_score -= 7
+        reasoning_parts.append("� Prompt lacks sufficient detail")
+
+    # Calculate total score
+    total_score = brand_score + channel_score + quality_score + adherence_score
+
+    # Build reasoning string
+    reasoning = f"Score: {total_score}/100. " + " | ".join(reasoning_parts)
+
+    return {
+        "score": total_score,
+        "reasoning": reasoning,
+        "breakdown": {
+            "brand_compliance": brand_score,
+            "channel_specifications": channel_score,
+            "visual_quality": quality_score,
+            "prompt_adherence": adherence_score,
+        }
+    }
+
+
+class CreativeGenerationService:
+    """
+    Orchestrates creative generation and scoring workflow.
+
+    This service combines CreativeGenerator with scoring logic to provide
+    a complete workflow: generate 3 variants, score each, save to database.
+    """
+
+    def __init__(self, api_key: Optional[str] = None):
+        """
+        Initialize the creative generation service.
+
+        Args:
+            api_key: FAL API key (optional, will use env var if not provided)
+        """
+        if api_key is None:
+            api_key = os.getenv("FAL_KEY")
+            if not api_key:
+                raise ValueError("FAL_KEY not found in environment variables")
+
+        self.generator = CreativeGenerator(api_key=api_key)
+        self.logger = logging.getLogger(self.__class__.__name__)
+
+    async def generate_and_score(
+        self,
+        campaign_id: int,
+        campaign_type: str,
+        channel: str,
+        key_message: str,
+        visual_concept: str,
+        db: Session,
+        offer_details: Optional[Dict[str, Any]] = None,
+        target_audience: Optional[str] = None,
+        additional_elements: Optional[Dict[str, Any]] = None,
+    ) -> List[Dict[str, Any]]:
+        """
+        Generate and score 3 creative variants.
+
+        This is the main entry point for the service. It:
+        1. Generates 3 variants with different styles
+        2. For each: build prompt � generate � save � score � save to DB
+        3. Handles partial failures (continues if 1-2 variants fail)
+        4. Sorts by score and adds rankings
+        5. Returns ranked results
+
+        Args:
+            campaign_id: Database campaign ID
+            campaign_type: Type of campaign (promotional, brand, etc.)
+            channel: Channel type (email_header, push_header)
+            key_message: Main headline/value proposition
+            visual_concept: Description of desired imagery
+            db: Database session
+            offer_details: Optional pricing, discounts, features
+            target_audience: Optional customer segment
+            additional_elements: Optional partner logos, timing, etc.
+
+        Returns:
+            List of variant dictionaries sorted by score (highest first).
+            Each dictionary contains:
+                - variant_number: Variant number (1-3)
+                - image_url: URL to the generated image
+                - filename: Saved filename
+                - prompt: Prompt used for generation
+                - model: AI model used
+                - score: Recommendation score (0-100)
+                - reasoning: Score explanation
+                - breakdown: Detailed score breakdown
+                - rank: Final ranking position (1-3)
+                - creative_id: Database ID
+
+        Raises:
+            RuntimeError: If all 3 variants fail to generate
+        """
+        self.logger.info(
+            f"Starting creative generation for campaign_id={campaign_id}, "
+            f"channel={channel}, type={campaign_type}"
+        )
+
+        # Define style variants for diversity
+        style_variants = [
+            "professional lifestyle photography with warm, natural lighting",
+            "modern digital art style with vibrant colors and dynamic composition",
+            "cinematic photography with dramatic lighting and bold contrast"
+        ]
+
+        results = []
+        successful_variants = 0
+
+        # Generate 3 variants
+        for variant_num in range(1, 4):
+            try:
+                self.logger.info(f"Generating variant {variant_num}/3")
+
+                # Build prompt with style variant
+                style_override = {"style": style_variants[variant_num - 1]}
+                merged_elements = {**(additional_elements or {}), **style_override}
+
+                prompt = self.generator.build_prompt(
+                    campaign_type=campaign_type,
+                    channel=channel,
+                    key_message=key_message,
+                    visual_concept=visual_concept,
+                    offer_details=offer_details,
+                    target_audience=target_audience,
+                    additional_elements=merged_elements,
+                )
+
+                # Generate image
+                generation_result = self.generator.generate_image(
+                    prompt=prompt,
+                    style_variant=style_variants[variant_num - 1]
+                )
+
+                # Save image to disk
+                image_url = generation_result["url"]
+                save_result = await save_image(
+                    image_url=image_url,
+                    campaign_id=campaign_id,
+                    channel=channel,
+                    variant=variant_num,
+                )
+
+                # Score creative
+                generation_params = {
+                    "model": self.generator.model,
+                    "style": style_variants[variant_num - 1],
+                    "width": generation_result.get("width"),
+                    "height": generation_result.get("height"),
+                }
+
+                score_result = score_creative(
+                    image_url=save_result["relative_url"],
+                    prompt=prompt,
+                    channel=channel,
+                    campaign_type=campaign_type,
+                    generation_params=generation_params,
+                )
+
+                # Save to database
+                creative = GeneratedCreative(
+                    campaign_id=campaign_id,
+                    variant_number=variant_num,
+                    channel_type=channel,
+                    image_filename=save_result["filename"],
+                    image_url=save_result["relative_url"],
+                    prompt_used=prompt,
+                    generation_params=json.dumps(generation_params),
+                    model_used=self.generator.model,
+                    recommendation_score=score_result["score"],
+                    score_reasoning=score_result["reasoning"],
+                    is_selected=False,
+                )
+
+                db.add(creative)
+                db.commit()
+                db.refresh(creative)
+
+                # Build result dict
+                result = {
+                    "variant_number": variant_num,
+                    "creative_id": creative.creative_id,
+                    "image_url": save_result["relative_url"],
+                    "filename": save_result["filename"],
+                    "prompt": prompt,
+                    "model": self.generator.model,
+                    "score": score_result["score"],
+                    "reasoning": score_result["reasoning"],
+                    "breakdown": score_result["breakdown"],
+                }
+
+                results.append(result)
+                successful_variants += 1
+
+                self.logger.info(
+                    f"Variant {variant_num} generated successfully with score {score_result['score']}"
+                )
+
+            except Exception as e:
+                self.logger.error(f"Failed to generate variant {variant_num}: {e}")
+                # Continue with other variants even if one fails
+                continue
+
+        # Check if we have at least one successful variant
+        if successful_variants == 0:
+            raise RuntimeError("All 3 creative variants failed to generate")
+
+        self.logger.info(f"Successfully generated {successful_variants}/3 variants")
+
+        # Sort by score (descending)
+        results.sort(key=lambda x: x["score"], reverse=True)
+
+        # Add rankings
+        for rank, result in enumerate(results, start=1):
+            result["rank"] = rank
+
+        self.logger.info(
+            f"Creative generation completed. Top score: {results[0]['score']}/100"
+        )
+
+        return results

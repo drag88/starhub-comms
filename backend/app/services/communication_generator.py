@@ -4,24 +4,26 @@ Communication generation service using Claude AI.
 This service constructs prompts and invokes Claude AI to generate
 customer communication variations for StarHub campaigns.
 """
-from typing import Dict, List, Any, Optional
-import re
+
 import logging
-import time
 import os
-import ssl
-from dotenv import load_dotenv
-from anthropic import Anthropic, APIError, APITimeoutError
-import httpx
 
 # Load environment variables
 import pathlib
-env_path = pathlib.Path(__file__).parent.parent.parent.parent / '.env'
+import re
+import time
+from typing import Any
+
+import httpx
+from anthropic import Anthropic, APIError, APITimeoutError
+from dotenv import load_dotenv
+
+env_path = pathlib.Path(__file__).parent.parent.parent.parent / ".env"
 load_dotenv(dotenv_path=env_path)
 
 from app.services.config_loader import (
-    get_cohort_characteristics,
     get_channel_constraints,
+    get_cohort_characteristics,
     get_objective_guidance,
     get_product_by_id,
 )
@@ -44,7 +46,7 @@ class CommunicationGenerator:
     MAX_RETRIES = 2
     RETRY_DELAY = 2  # seconds
 
-    def __init__(self, api_key: Optional[str] = None):
+    def __init__(self, api_key: str | None = None):
         """
         Initialize the communication generator.
 
@@ -55,19 +57,23 @@ class CommunicationGenerator:
         self.logger = logging.getLogger(self.__class__.__name__)
 
         # Use provided key or get from environment
-        final_api_key = api_key or os.getenv('ANTHROPIC_API_KEY')
+        final_api_key = api_key or os.getenv("ANTHROPIC_API_KEY")
 
         if not final_api_key:
             self.logger.error("ANTHROPIC_API_KEY not found in environment variables")
-            raise ValueError("ANTHROPIC_API_KEY is required. Please set it in the .env file or pass it explicitly.")
+            raise ValueError(
+                "ANTHROPIC_API_KEY is required. Please set it in the .env file or pass it explicitly."
+            )
 
         # Configure HTTP client with SSL handling for corporate proxies
         # Check if SSL verification should be disabled (for corporate environments)
         # This handles cases where corporate proxies use self-signed certificates
-        verify_ssl = os.getenv('ANTHROPIC_VERIFY_SSL', 'true').lower() != 'false'
+        verify_ssl = os.getenv("ANTHROPIC_VERIFY_SSL", "true").lower() != "false"
 
         if not verify_ssl:
-            self.logger.warning("SSL verification disabled - this should only be used in corporate proxy environments")
+            self.logger.warning(
+                "SSL verification disabled - this should only be used in corporate proxy environments"
+            )
             # Create custom HTTP client with SSL verification disabled
             # This is necessary when corporate proxies use self-signed certificates
             http_client = httpx.Client(verify=False, timeout=60.0)
@@ -76,17 +82,19 @@ class CommunicationGenerator:
             http_client = httpx.Client(timeout=60.0)
 
         self.client = Anthropic(api_key=final_api_key, http_client=http_client)
-        self.logger.info(f"CommunicationGenerator initialized with API key (SSL verification: {verify_ssl})")
+        self.logger.info(
+            f"CommunicationGenerator initialized with API key (SSL verification: {verify_ssl})"
+        )
 
     def generate_variations(
         self,
         channel: str,
-        cohorts: List[str],
+        cohorts: list[str],
         objective: str,
-        product_lines: List[str],
-        promotion_details: Optional[Dict[str, Any]] = None,
-        customization: Optional[Dict[str, Any]] = None,
-    ) -> List[Dict[str, Any]]:
+        product_lines: list[str],
+        promotion_details: dict[str, Any] | None = None,
+        customization: dict[str, Any] | None = None,
+    ) -> list[dict[str, Any]]:
         """
         Generate 5 communication variations for a campaign.
 
@@ -124,11 +132,13 @@ class CommunicationGenerator:
         # Parse variations from response
         variations = self._parse_variations(response_text)
 
-        self.logger.info(f"Successfully generated {len(variations)} variations for {channel}/{objective}")
+        self.logger.info(
+            f"Successfully generated {len(variations)} variations for {channel}/{objective}"
+        )
         return variations
 
     def _validate_inputs(
-        self, channel: str, cohorts: List[str], objective: str, product_lines: List[str]
+        self, channel: str, cohorts: list[str], objective: str, product_lines: list[str]
     ) -> None:
         """
         Validate input parameters.
@@ -158,11 +168,11 @@ class CommunicationGenerator:
     def _build_prompt(
         self,
         channel: str,
-        cohorts: List[str],
+        cohorts: list[str],
         objective: str,
-        product_lines: List[str],
-        promotion_details: Dict[str, Any],
-        customization: Dict[str, Any],
+        product_lines: list[str],
+        promotion_details: dict[str, Any],
+        customization: dict[str, Any],
     ) -> str:
         """
         Build comprehensive prompt for Claude AI.
@@ -218,7 +228,7 @@ class CommunicationGenerator:
 
 CAMPAIGN PARAMETERS:
 Channel: {channel.upper()}
-Objective: {objective_info.get('name', objective)} - {objective_info.get('description', '')}
+Objective: {objective_info.get("name", objective)} - {objective_info.get("description", "")}
 
 TARGET COHORTS:
 {chr(10).join(cohort_info)}
@@ -244,32 +254,32 @@ Generate the 5 variations now:"""
 
         return prompt
 
-    def _format_channel_constraints(self, channel: str, constraints: Dict[str, Any]) -> str:
+    def _format_channel_constraints(self, channel: str, constraints: dict[str, Any]) -> str:
         """Format channel constraints for the prompt."""
         if channel == "sms":
             return f"""CHANNEL CONSTRAINTS (SMS):
-- Maximum length: {constraints.get('max_length', 160)} characters
-- Optimal length: {constraints.get('optimal_min', 140)}-{constraints.get('optimal_max', 160)} characters
+- Maximum length: {constraints.get("max_length", 160)} characters
+- Optimal length: {constraints.get("optimal_min", 140)}-{constraints.get("optimal_max", 160)} characters
 - Must include opt-out for promotional messages (e.g., "Reply STOP to opt out")
 - Include clear call-to-action"""
 
         elif channel == "email":
             return f"""CHANNEL CONSTRAINTS (Email):
-- Subject line: {constraints.get('subject_min', 40)}-{constraints.get('subject_max', 60)} characters (optimal)
+- Subject line: {constraints.get("subject_min", 40)}-{constraints.get("subject_max", 60)} characters (optimal)
 - Must include unsubscribe option for promotional messages
 - Clear structure with engaging subject line and informative body
 - Include preheader text (first 50 characters of body)"""
 
         elif channel == "push":
             return f"""CHANNEL CONSTRAINTS (Push Notification):
-- Title: {constraints.get('title_min', 40)}-{constraints.get('title_max', 50)} characters (optimal)
-- Body: {constraints.get('body_min', 100)}-{constraints.get('body_max', 120)} characters (optimal)
+- Title: {constraints.get("title_min", 40)}-{constraints.get("title_max", 50)} characters (optimal)
+- Body: {constraints.get("body_min", 100)}-{constraints.get("body_max", 120)} characters (optimal)
 - May include 1-2 relevant emojis (not excessive)
 - Include clear call-to-action or deep link"""
 
         return ""
 
-    def _format_promotion_details(self, promotion_details: Dict[str, Any]) -> str:
+    def _format_promotion_details(self, promotion_details: dict[str, Any]) -> str:
         """Format promotion details for the prompt."""
         if not promotion_details:
             return ""
@@ -326,10 +336,10 @@ Generate the 5 variations now:"""
     def _format_customization(
         self,
         tone: str,
-        required_phrases: List[str],
-        prohibited_words: List[str],
+        required_phrases: list[str],
+        prohibited_words: list[str],
         length_preference: str,
-        custom_instructions: Optional[str] = None,
+        custom_instructions: str | None = None,
     ) -> str:
         """Format customization options for the prompt."""
         parts = ["CUSTOMIZATION:"]
@@ -367,7 +377,9 @@ Generate the 5 variations now:"""
         """
         for attempt in range(self.MAX_RETRIES + 1):
             try:
-                self.logger.info(f"Calling Claude API (attempt {attempt + 1}/{self.MAX_RETRIES + 1})")
+                self.logger.info(
+                    f"Calling Claude API (attempt {attempt + 1}/{self.MAX_RETRIES + 1})"
+                )
 
                 response = self.client.messages.create(
                     model=self.MODEL,
@@ -378,7 +390,9 @@ Generate the 5 variations now:"""
                 # Extract text from response
                 if response.content and len(response.content) > 0:
                     response_text = response.content[0].text
-                    self.logger.info(f"Successfully received response from Claude ({len(response_text)} chars)")
+                    self.logger.info(
+                        f"Successfully received response from Claude ({len(response_text)} chars)"
+                    )
                     return response_text
                 else:
                     raise ValueError("Empty response from Claude API")
@@ -388,17 +402,27 @@ Generate the 5 variations now:"""
                 if attempt < self.MAX_RETRIES:
                     time.sleep(self.RETRY_DELAY * (attempt + 1))  # Exponential backoff
                 else:
-                    raise TimeoutError(f"Claude API timeout after {self.MAX_RETRIES + 1} attempts: {str(e)}") from e
+                    raise TimeoutError(
+                        f"Claude API timeout after {self.MAX_RETRIES + 1} attempts: {str(e)}"
+                    ) from e
 
             except APIError as e:
                 error_msg = str(e)
                 self.logger.error(f"Claude API error on attempt {attempt + 1}: {error_msg}")
-                
+
                 # Check for authentication errors
-                if "api_key" in error_msg.lower() or "authentication" in error_msg.lower() or "401" in error_msg or hasattr(e, 'status_code') and e.status_code == 401:
+                if (
+                    "api_key" in error_msg.lower()
+                    or "authentication" in error_msg.lower()
+                    or "401" in error_msg
+                    or hasattr(e, "status_code")
+                    and e.status_code == 401
+                ):
                     # Re-raise with original error but better message
-                    raise ValueError(f"Authentication failed: Invalid or missing API key. {error_msg}") from e
-                
+                    raise ValueError(
+                        f"Authentication failed: Invalid or missing API key. {error_msg}"
+                    ) from e
+
                 if attempt < self.MAX_RETRIES:
                     time.sleep(self.RETRY_DELAY * (attempt + 1))
                 else:
@@ -407,17 +431,25 @@ Generate the 5 variations now:"""
 
             except Exception as e:
                 error_msg = str(e)
-                self.logger.error(f"Unexpected error calling Claude API: {error_msg}", exc_info=True)
-                
+                self.logger.error(
+                    f"Unexpected error calling Claude API: {error_msg}", exc_info=True
+                )
+
                 # Check for connection errors
-                if "connection" in error_msg.lower() or "network" in error_msg.lower() or "timeout" in error_msg.lower():
-                    raise ConnectionError(f"Connection error: Unable to connect to Claude API. Please check your network connection and API key. {error_msg}") from e
-                
+                if (
+                    "connection" in error_msg.lower()
+                    or "network" in error_msg.lower()
+                    or "timeout" in error_msg.lower()
+                ):
+                    raise ConnectionError(
+                        f"Connection error: Unable to connect to Claude API. Please check your network connection and API key. {error_msg}"
+                    ) from e
+
                 raise RuntimeError(f"Unexpected error calling Claude API: {error_msg}") from e
 
         raise RuntimeError("Failed to get response from Claude API after all retries")
 
-    def _parse_variations(self, response_text: str) -> List[Dict[str, Any]]:
+    def _parse_variations(self, response_text: str) -> list[dict[str, Any]]:
         """
         Parse variations from Claude's response.
 
@@ -433,12 +465,12 @@ Generate the 5 variations now:"""
         variations = []
 
         # Look for "VARIATION N:" patterns
-        pattern = r'VARIATION\s+(\d+):\s*(.+?)(?=VARIATION\s+\d+:|$)'
+        pattern = r"VARIATION\s+(\d+):\s*(.+?)(?=VARIATION\s+\d+:|$)"
         matches = re.findall(pattern, response_text, re.DOTALL | re.IGNORECASE)
 
         if not matches:
             # Fallback: try splitting by numbered lists
-            pattern = r'(\d+)\.\s*(.+?)(?=\d+\.|$)'
+            pattern = r"(\d+)\.\s*(.+?)(?=\d+\.|$)"
             matches = re.findall(pattern, response_text, re.DOTALL)
 
         if not matches:
@@ -450,12 +482,14 @@ Generate the 5 variations now:"""
             cleaned_text = variation_text.strip()
 
             # Remove any leading/trailing quotes or formatting
-            cleaned_text = re.sub(r'^["\'\s]+|["\'\s]+$', '', cleaned_text)
+            cleaned_text = re.sub(r'^["\'\s]+|["\'\s]+$', "", cleaned_text)
 
-            variations.append({
-                "variation_number": int(variation_num),
-                "text": cleaned_text,
-            })
+            variations.append(
+                {
+                    "variation_number": int(variation_num),
+                    "text": cleaned_text,
+                }
+            )
 
         # Validate we got exactly 5 variations
         if len(variations) != 5:

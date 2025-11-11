@@ -4,21 +4,24 @@ Configuration loader utility for YAML configuration files.
 This module provides cached access to YAML configuration files for cohorts,
 objectives, products, and channel constraints.
 """
-from pathlib import Path
-from typing import Any, Dict, List, Optional
-import yaml
+
 import logging
+from pathlib import Path
+from typing import Any
+
+import yaml
 
 logger = logging.getLogger(__name__)
 
 # Configuration cache
-_config_cache: Dict[str, Any] = {}
+_config_cache: dict[str, Any] = {}
 
 # Configuration file paths
 CONFIG_DIR = Path(__file__).parent.parent / "config"
 COHORTS_FILE = CONFIG_DIR / "cohorts.yaml"
 OBJECTIVES_FILE = CONFIG_DIR / "objectives.yaml"
 PRODUCTS_FILE = CONFIG_DIR / "products.yaml"
+CREATIVES_FILE = CONFIG_DIR / "creatives.yaml"
 
 # Channel constraints (not in YAML, hardcoded)
 CHANNEL_CONSTRAINTS = {
@@ -46,7 +49,7 @@ CHANNEL_CONSTRAINTS = {
 }
 
 
-def load_yaml_file(file_path: Path) -> Dict[str, Any]:
+def load_yaml_file(file_path: Path) -> dict[str, Any]:
     """
     Load and parse a YAML file.
 
@@ -64,7 +67,7 @@ def load_yaml_file(file_path: Path) -> Dict[str, Any]:
         raise FileNotFoundError(f"Configuration file not found: {file_path}")
 
     try:
-        with open(file_path, "r", encoding="utf-8") as f:
+        with open(file_path, encoding="utf-8") as f:
             content = yaml.safe_load(f)
             logger.info(f"Loaded configuration from {file_path}")
             return content or {}
@@ -73,7 +76,7 @@ def load_yaml_file(file_path: Path) -> Dict[str, Any]:
         raise
 
 
-def get_cached_config(config_name: str, file_path: Path) -> Dict[str, Any]:
+def get_cached_config(config_name: str, file_path: Path) -> dict[str, Any]:
     """
     Get cached configuration or load it if not cached.
 
@@ -89,7 +92,7 @@ def get_cached_config(config_name: str, file_path: Path) -> Dict[str, Any]:
     return _config_cache[config_name]
 
 
-def get_cohorts() -> Dict[str, List[Dict[str, Any]]]:
+def get_cohorts() -> dict[str, list[dict[str, Any]]]:
     """
     Get all cohort configurations.
 
@@ -100,7 +103,7 @@ def get_cohorts() -> Dict[str, List[Dict[str, Any]]]:
     return config.get("cohorts", {})
 
 
-def get_cohort_by_id(cohort_id: str) -> Optional[Dict[str, Any]]:
+def get_cohort_by_id(cohort_id: str) -> dict[str, Any] | None:
     """
     Get a specific cohort by ID.
 
@@ -118,7 +121,7 @@ def get_cohort_by_id(cohort_id: str) -> Optional[Dict[str, Any]]:
     return None
 
 
-def get_cohort_characteristics(cohort_ids: List[str]) -> Dict[str, Dict[str, Any]]:
+def get_cohort_characteristics(cohort_ids: list[str]) -> dict[str, dict[str, Any]]:
     """
     Get characteristics for multiple cohorts.
 
@@ -138,7 +141,7 @@ def get_cohort_characteristics(cohort_ids: List[str]) -> Dict[str, Dict[str, Any
     return characteristics
 
 
-def get_objectives() -> List[Dict[str, Any]]:
+def get_objectives() -> list[dict[str, Any]]:
     """
     Get all objective configurations.
 
@@ -149,7 +152,7 @@ def get_objectives() -> List[Dict[str, Any]]:
     return config.get("objectives", [])
 
 
-def get_objective_by_id(objective_id: str) -> Optional[Dict[str, Any]]:
+def get_objective_by_id(objective_id: str) -> dict[str, Any] | None:
     """
     Get a specific objective by ID.
 
@@ -166,7 +169,7 @@ def get_objective_by_id(objective_id: str) -> Optional[Dict[str, Any]]:
     return None
 
 
-def get_objective_guidance(objective_id: str) -> Dict[str, Any]:
+def get_objective_guidance(objective_id: str) -> dict[str, Any]:
     """
     Get guidance for a specific objective.
 
@@ -188,7 +191,7 @@ def get_objective_guidance(objective_id: str) -> Dict[str, Any]:
     }
 
 
-def get_products() -> Dict[str, List[Dict[str, Any]]]:
+def get_products() -> dict[str, list[dict[str, Any]]]:
     """
     Get all product configurations.
 
@@ -199,7 +202,7 @@ def get_products() -> Dict[str, List[Dict[str, Any]]]:
     return config.get("products", {})
 
 
-def get_product_by_id(product_id: str) -> Optional[Dict[str, Any]]:
+def get_product_by_id(product_id: str) -> dict[str, Any] | None:
     """
     Get a specific product by ID.
 
@@ -217,7 +220,7 @@ def get_product_by_id(product_id: str) -> Optional[Dict[str, Any]]:
     return None
 
 
-def get_channel_constraints(channel: str) -> Dict[str, Any]:
+def get_channel_constraints(channel: str) -> dict[str, Any]:
     """
     Get constraints for a specific communication channel.
 
@@ -241,7 +244,7 @@ def clear_cache() -> None:
     logger.info("Configuration cache cleared")
 
 
-def get_cohort_keywords(cohort_id: str) -> Dict[str, List[str]]:
+def get_cohort_keywords(cohort_id: str) -> dict[str, list[str]]:
     """
     Get recommended keywords for a cohort (for scoring algorithm).
 
@@ -306,7 +309,7 @@ def get_cohort_keywords(cohort_id: str) -> Dict[str, List[str]]:
     return cohort_keywords.get(cohort_id, {"positive": [], "negative": []})
 
 
-def get_objective_keywords(objective_id: str) -> Dict[str, List[str]]:
+def get_objective_keywords(objective_id: str) -> dict[str, list[str]]:
     """
     Get recommended keywords for an objective (for scoring algorithm).
 
@@ -351,3 +354,58 @@ def get_objective_keywords(objective_id: str) -> Dict[str, List[str]]:
     }
 
     return objective_keywords.get(objective_id, {})
+
+
+def get_channel_specs(channel_type: str) -> dict[str, Any]:
+    """
+    Get image specifications for creative channel.
+
+    Args:
+        channel_type: Channel type (email_header or push_header)
+
+    Returns:
+        Dictionary with channel specifications (width, height, aspect_ratio, etc.)
+
+    Raises:
+        ValueError: If channel_type is not valid
+    """
+    config = get_cached_config("creatives", CREATIVES_FILE)
+    channels = config.get("channels", {})
+
+    if channel_type not in channels:
+        raise ValueError(f"Unknown channel type: {channel_type}")
+
+    return channels[channel_type]
+
+
+def get_brand_guidelines() -> dict[str, Any]:
+    """
+    Get StarHub brand guidelines for creatives.
+
+    Returns:
+        Dictionary with brand guidelines (colors, logo, style preferences)
+    """
+    config = get_cached_config("creatives", CREATIVES_FILE)
+    return config.get("brand_guidelines", {})
+
+
+def get_model_config(model_name: str = "seedream_4") -> dict[str, Any]:
+    """
+    Get AI model configuration for image generation.
+
+    Args:
+        model_name: Model identifier (default: seedream_4)
+
+    Returns:
+        Dictionary with model configuration parameters
+
+    Raises:
+        ValueError: If model_name is not configured
+    """
+    config = get_cached_config("creatives", CREATIVES_FILE)
+    model_configs = config.get("model_config", {})
+
+    if model_name not in model_configs:
+        raise ValueError(f"Unknown model: {model_name}")
+
+    return model_configs[model_name]

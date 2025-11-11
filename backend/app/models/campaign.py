@@ -1,9 +1,12 @@
 """
 Campaign model for storing campaign configurations.
 """
+
 from datetime import datetime
-from sqlalchemy import Column, Integer, String, Text, DateTime, CheckConstraint, Index
+
+from sqlalchemy import CheckConstraint, Column, DateTime, Index, Integer, Text
 from sqlalchemy.orm import relationship
+
 from database import Base
 
 
@@ -43,29 +46,22 @@ class Campaign(Base):
 
     # Relationships
     communications = relationship(
-        "GeneratedCommunication",
-        back_populates="campaign",
-        cascade="all, delete-orphan"
+        "GeneratedCommunication", back_populates="campaign", cascade="all, delete-orphan"
+    )
+
+    creatives = relationship(
+        "GeneratedCreative", back_populates="campaign", cascade="all, delete-orphan"
     )
 
     promotions = relationship(
-        "PromotionUpload",
-        back_populates="campaign",
-        cascade="all, delete-orphan"
+        "PromotionUpload", back_populates="campaign", cascade="all, delete-orphan"
     )
 
-    error_logs = relationship(
-        "ErrorLog",
-        back_populates="campaign",
-        cascade="all, delete-orphan"
-    )
+    error_logs = relationship("ErrorLog", back_populates="campaign", cascade="all, delete-orphan")
 
     # Table constraints
     __table_args__ = (
-        CheckConstraint(
-            "channel IN ('email', 'sms', 'push')",
-            name="check_channel_valid"
-        ),
+        CheckConstraint("channel IN ('email', 'sms', 'push')", name="check_channel_valid"),
         Index("idx_campaigns_created", "created_at"),
         Index("idx_campaigns_channel", "channel"),
     )

@@ -1,9 +1,12 @@
 """
 Error Log model for tracking system errors and failures.
 """
+
 from datetime import datetime
-from sqlalchemy import Column, Integer, Text, DateTime, ForeignKey, Index
+
+from sqlalchemy import Column, DateTime, ForeignKey, Index, Integer, Text
 from sqlalchemy.orm import relationship
+
 from database import Base
 
 
@@ -25,9 +28,7 @@ class ErrorLog(Base):
 
     error_id = Column(Integer, primary_key=True, autoincrement=True)
     campaign_id = Column(
-        Integer,
-        ForeignKey("campaigns.campaign_id", ondelete="CASCADE"),
-        nullable=True
+        Integer, ForeignKey("campaigns.campaign_id", ondelete="CASCADE"), nullable=True
     )
     error_type = Column(Text, nullable=False)
     error_message = Column(Text, nullable=False)

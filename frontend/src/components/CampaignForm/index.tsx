@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import type { CampaignFormData, Cohort, Product, Objective } from '/Users/asreenivas/Library/CloudStorage/OneDrive-StarHubLtd/02_Data_Analytics/Scripts/29. Customer Comms Generator/frontend/src/types/campaign';
 import { campaignAPI } from '/Users/asreenivas/Library/CloudStorage/OneDrive-StarHubLtd/02_Data_Analytics/Scripts/29. Customer Comms Generator/frontend/src/services/api';
@@ -19,12 +19,13 @@ interface CampaignFormProps {
 
 export const CampaignForm: React.FC<CampaignFormProps> = ({
   cohorts,
-  products,
+  products: _products,
   objectives,
   onGenerateComplete,
 }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [generateCreatives, setGenerateCreatives] = useState(false);
 
   const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm<CampaignFormData>({
     defaultValues: {
@@ -42,6 +43,17 @@ export const CampaignForm: React.FC<CampaignFormProps> = ({
       },
     },
   });
+
+  // Watch the channel field to show/hide creative generation option
+  const selectedChannel = watch('channel');
+  const supportsCreatives = selectedChannel === 'email' || selectedChannel === 'push';
+
+  // Reset creative generation checkbox when channel changes to non-supported channel
+  React.useEffect(() => {
+    if (!supportsCreatives && generateCreatives) {
+      setGenerateCreatives(false);
+    }
+  }, [supportsCreatives, generateCreatives]);
 
   // Infer product_lines from selected cohorts
   const inferProductLines = (cohorts: string[]): string[] => {
@@ -92,6 +104,17 @@ export const CampaignForm: React.FC<CampaignFormProps> = ({
       // Generate communications
       await campaignAPI.generate(campaignId);
 
+      // Generate creatives if requested and channel supports it
+      if (generateCreatives && (campaignData.channel === 'email' || campaignData.channel === 'push')) {
+        try {
+          await campaignAPI.generateCreatives(campaignId);
+        } catch (creativeError) {
+          console.error('Creative generation failed:', creativeError);
+          // Don't fail the whole process if creative generation fails
+          // User can regenerate later
+        }
+      }
+
       if (onGenerateComplete) {
         onGenerateComplete(campaignId);
       }
@@ -105,7 +128,7 @@ export const CampaignForm: React.FC<CampaignFormProps> = ({
         const validationErrors = err.response.data.errors;
         const errorMessages = validationErrors.map((error: any) => {
           const field = error.loc?.slice(1).join('.') || 'field'; // Remove 'body' from location
-          const fieldName = field.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+          const fieldName = field.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase());
           return `• ${fieldName}: ${error.msg}`;
         });
         setError(errorMessages.join('\n'));
@@ -196,6 +219,35 @@ export const CampaignForm: React.FC<CampaignFormProps> = ({
             </div>
           </div>
         </section>
+
+        {/* Creative Generation Option - Only show for Email/Push channels */}
+        {supportsCreatives && (
+          <section className="border border-gray-300 rounded-lg p-5 bg-white">
+            <div className="flex items-start gap-3">
+              <input
+                type="checkbox"
+                id="generateCreatives"
+                checked={generateCreatives}
+                onChange={(e) => setGenerateCreatives(e.target.checked)}
+                className="mt-1 h-5 w-5 text-green-600 border-gray-300 rounded focus:ring-green-500"
+              />
+              <div className="flex-1">
+                <label htmlFor="generateCreatives" className="flex items-center gap-2 cursor-pointer">
+                  <span className="text-lg font-semibold text-gray-900">
+                    🎨 Generate Creative Images
+                  </span>
+                </label>
+                <p className="text-sm text-gray-600 mt-1">
+                  Automatically generate AI-powered creative images for your {selectedChannel} campaign.
+                  This will create 3 image variants optimized for your channel.
+                </p>
+                <div className="mt-2 text-xs text-gray-500 bg-gray-50 p-2 rounded">
+                  ⏱️ Note: This may add 30-60 seconds to generation time
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
 
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">

@@ -1,9 +1,11 @@
 """
 Pydantic schemas for campaign-related requests and responses.
 """
-from pydantic import BaseModel, Field, field_validator
-from typing import List, Optional, Dict, Any
+
 from datetime import datetime
+from typing import Any
+
+from pydantic import BaseModel, Field, field_validator
 
 
 class CustomizationOptions(BaseModel):
@@ -11,26 +13,22 @@ class CustomizationOptions(BaseModel):
 
     tone: str = Field(
         ...,
-        description="Communication tone: friendly, urgent, premium, value-focused, professional"
+        description="Communication tone: friendly, urgent, premium, value-focused, professional",
     )
-    custom_instructions: Optional[str] = Field(
-        None,
-        description="Free-text custom instructions for generation"
+    custom_instructions: str | None = Field(
+        None, description="Free-text custom instructions for generation"
     )
-    required_phrases: List[str] = Field(
-        default_factory=list,
-        description="Phrases that must appear in all variations"
+    required_phrases: list[str] = Field(
+        default_factory=list, description="Phrases that must appear in all variations"
     )
-    prohibited_words: List[str] = Field(
-        default_factory=list,
-        description="Words that must not appear in communications"
+    prohibited_words: list[str] = Field(
+        default_factory=list, description="Words that must not appear in communications"
     )
     length_preference: str = Field(
-        default="optimal",
-        description="Length preference: shorter, optimal, or longer"
+        default="optimal", description="Length preference: shorter, optimal, or longer"
     )
 
-    @field_validator('tone')
+    @field_validator("tone")
     @classmethod
     def validate_tone(cls, v):
         """Validate tone is one of allowed values."""
@@ -39,7 +37,7 @@ class CustomizationOptions(BaseModel):
             raise ValueError(f"Tone must be one of: {', '.join(allowed)}")
         return v
 
-    @field_validator('length_preference')
+    @field_validator("length_preference")
     @classmethod
     def validate_length(cls, v):
         """Validate length preference is one of allowed values."""
@@ -53,66 +51,42 @@ class PromotionDetails(BaseModel):
     """Details about a promotion or offer."""
 
     promotion_name: str = Field(..., description="Name of the promotion")
-    pricing: Optional[Dict[str, Any]] = Field(
-        None,
-        description="Pricing info: monthly_price, contract_duration, discount, bonus"
+    pricing: dict[str, Any] | None = Field(
+        None, description="Pricing info: monthly_price, contract_duration, discount, bonus"
     )
-    features: List[str] = Field(
-        default_factory=list,
-        description="Key features and benefits of the promotion"
+    features: list[str] = Field(
+        default_factory=list, description="Key features and benefits of the promotion"
     )
-    terms_conditions: Optional[str] = Field(
-        None,
-        description="Terms and conditions text"
-    )
-    validity_start: Optional[str] = Field(
-        None,
-        description="Promotion start date (YYYY-MM-DD)"
-    )
-    validity_end: Optional[str] = Field(
-        None,
-        description="Promotion end date (YYYY-MM-DD)"
-    )
+    terms_conditions: str | None = Field(None, description="Terms and conditions text")
+    validity_start: str | None = Field(None, description="Promotion start date (YYYY-MM-DD)")
+    validity_end: str | None = Field(None, description="Promotion end date (YYYY-MM-DD)")
 
 
 class CampaignCreate(BaseModel):
     """Schema for creating a new campaign."""
 
     campaign_name: str = Field(
-        ...,
-        min_length=1,
-        max_length=200,
-        description="Human-readable name for the campaign"
+        ..., min_length=1, max_length=200, description="Human-readable name for the campaign"
     )
     channel: str = Field(
-        ...,
-        pattern="^(email|sms|push)$",
-        description="Communication channel: email, sms, or push"
+        ..., pattern="^(email|sms|push)$", description="Communication channel: email, sms, or push"
     )
     objective: str = Field(
         ...,
-        description="Campaign objective: promotion, retention, upsell, cross_sell, service_update, billing"
+        description="Campaign objective: promotion, retention, upsell, cross_sell, service_update, billing",
     )
-    product_lines: List[str] = Field(
-        ...,
-        min_length=1,
-        description="At least one product line required"
+    product_lines: list[str] = Field(
+        ..., min_length=1, description="At least one product line required"
     )
-    cohorts: List[str] = Field(
-        ...,
-        min_length=1,
-        description="At least one target cohort required"
-    )
-    promotion_details: Optional[PromotionDetails] = Field(
-        None,
-        description="Optional promotion details for promotional campaigns"
+    cohorts: list[str] = Field(..., min_length=1, description="At least one target cohort required")
+    promotion_details: PromotionDetails | None = Field(
+        None, description="Optional promotion details for promotional campaigns"
     )
     customization: CustomizationOptions = Field(
-        ...,
-        description="Customization options for communication generation"
+        ..., description="Customization options for communication generation"
     )
 
-    @field_validator('objective')
+    @field_validator("objective")
     @classmethod
     def validate_objective(cls, v):
         """Validate objective is one of allowed values."""
@@ -121,7 +95,7 @@ class CampaignCreate(BaseModel):
             raise ValueError(f"Objective must be one of: {', '.join(allowed)}")
         return v
 
-    @field_validator('channel')
+    @field_validator("channel")
     @classmethod
     def validate_channel(cls, v):
         """Validate channel is one of allowed values."""
@@ -134,51 +108,42 @@ class CampaignCreate(BaseModel):
 class CampaignUpdate(BaseModel):
     """Schema for updating an existing campaign."""
 
-    campaign_name: Optional[str] = Field(
-        None,
-        min_length=1,
-        max_length=200,
-        description="Updated campaign name"
+    campaign_name: str | None = Field(
+        None, min_length=1, max_length=200, description="Updated campaign name"
     )
-    channel: Optional[str] = Field(
-        None,
-        pattern="^(email|sms|push)$",
-        description="Updated channel"
+    channel: str | None = Field(
+        None, pattern="^(email|sms|push)$", description="Updated channel"
     )
-    objective: Optional[str] = Field(
-        None,
-        description="Updated objective"
+    objective: str | None = Field(None, description="Updated objective")
+    product_lines: list[str] | None = Field(
+        None, min_length=1, description="Updated product lines"
     )
-    product_lines: Optional[List[str]] = Field(
-        None,
-        min_length=1,
-        description="Updated product lines"
+    cohorts: list[str] | None = Field(None, min_length=1, description="Updated cohorts")
+    promotion_details: PromotionDetails | None = Field(
+        None, description="Updated promotion details"
     )
-    cohorts: Optional[List[str]] = Field(
-        None,
-        min_length=1,
-        description="Updated cohorts"
-    )
-    promotion_details: Optional[PromotionDetails] = Field(
-        None,
-        description="Updated promotion details"
-    )
-    customization: Optional[CustomizationOptions] = Field(
-        None,
-        description="Updated customization options"
+    customization: CustomizationOptions | None = Field(
+        None, description="Updated customization options"
     )
 
-    @field_validator('objective')
+    @field_validator("objective")
     @classmethod
     def validate_objective(cls, v):
         """Validate objective if provided."""
         if v is not None:
-            allowed = ["promotion", "retention", "upsell", "cross_sell", "service_update", "billing"]
+            allowed = [
+                "promotion",
+                "retention",
+                "upsell",
+                "cross_sell",
+                "service_update",
+                "billing",
+            ]
             if v not in allowed:
                 raise ValueError(f"Objective must be one of: {', '.join(allowed)}")
         return v
 
-    @field_validator('channel')
+    @field_validator("channel")
     @classmethod
     def validate_channel(cls, v):
         """Validate channel if provided."""
@@ -196,10 +161,10 @@ class CampaignResponse(BaseModel):
     campaign_name: str
     channel: str
     objective: str
-    product_lines: List[str]
-    cohorts: List[str]
-    promotion_details: Optional[Dict[str, Any]] = None
-    customization: Dict[str, Any]
+    product_lines: list[str]
+    cohorts: list[str]
+    promotion_details: dict[str, Any] | None = None
+    customization: dict[str, Any]
     created_at: datetime
     updated_at: datetime
 
@@ -220,10 +185,18 @@ class CampaignResponse(BaseModel):
             campaign_name=db_model.campaign_name,
             channel=db_model.channel,
             objective=db_model.objective,
-            product_lines=json.loads(db_model.product_lines) if isinstance(db_model.product_lines, str) else db_model.product_lines,
-            cohorts=json.loads(db_model.cohorts) if isinstance(db_model.cohorts, str) else db_model.cohorts,
-            promotion_details=json.loads(db_model.promotion_details) if db_model.promotion_details and isinstance(db_model.promotion_details, str) else db_model.promotion_details,
-            customization=json.loads(db_model.customization) if isinstance(db_model.customization, str) else db_model.customization,
+            product_lines=json.loads(db_model.product_lines)
+            if isinstance(db_model.product_lines, str)
+            else db_model.product_lines,
+            cohorts=json.loads(db_model.cohorts)
+            if isinstance(db_model.cohorts, str)
+            else db_model.cohorts,
+            promotion_details=json.loads(db_model.promotion_details)
+            if db_model.promotion_details and isinstance(db_model.promotion_details, str)
+            else db_model.promotion_details,
+            customization=json.loads(db_model.customization)
+            if isinstance(db_model.customization, str)
+            else db_model.customization,
             created_at=db_model.created_at,
-            updated_at=db_model.updated_at
+            updated_at=db_model.updated_at,
         )

@@ -1,25 +1,25 @@
 """
 Campaign API endpoints for CRUD operations.
 """
-from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy.orm import Session
-from typing import List, Optional
-from datetime import datetime
+
 import json
 import logging
+from datetime import datetime
 
-from database import get_db
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlalchemy.orm import Session
+
 from app.models.campaign import Campaign
-from app.schemas.campaign import CampaignCreate, CampaignUpdate, CampaignResponse
-from app.schemas.common import MessageResponse
+from app.schemas.campaign import CampaignCreate, CampaignResponse, CampaignUpdate
 from app.services.config_loader import get_cohort_by_id
+from database import get_db
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/v1/campaigns", tags=["campaigns"])
 
 
-def infer_product_lines_from_cohorts(cohort_ids: List[str]) -> List[str]:
+def infer_product_lines_from_cohorts(cohort_ids: list[str]) -> list[str]:
     """
     Infer product lines from selected cohorts based on cohort characteristics.
 
@@ -47,20 +47,26 @@ def infer_product_lines_from_cohorts(cohort_ids: List[str]) -> List[str]:
         cohort_name_lower = cohort.get("name", "").lower()
 
         # Broadband-related cohorts
-        if any(keyword in cohort_id_lower or keyword in cohort_name_lower
-               for keyword in ["broadband", "fiber", "10gbps", "premium_segment"]):
+        if any(
+            keyword in cohort_id_lower or keyword in cohort_name_lower
+            for keyword in ["broadband", "fiber", "10gbps", "premium_segment"]
+        ):
             product_lines.add("broadband_fiber")
             if "10gbps" in cohort_id_lower or "10gbps" in cohort_name_lower:
                 product_lines.add("broadband_10gbps")
 
         # Bundle-related cohorts
-        elif any(keyword in cohort_id_lower or keyword in cohort_name_lower
-                 for keyword in ["bundle", "triple", "homehub"]):
+        elif any(
+            keyword in cohort_id_lower or keyword in cohort_name_lower
+            for keyword in ["bundle", "triple", "homehub"]
+        ):
             product_lines.add("bundle_homehub")
 
         # Entertainment-related cohorts
-        elif any(keyword in cohort_id_lower or keyword in cohort_name_lower
-                 for keyword in ["entertainment", "sports", "streaming", "tv"]):
+        elif any(
+            keyword in cohort_id_lower or keyword in cohort_name_lower
+            for keyword in ["entertainment", "sports", "streaming", "tv"]
+        ):
             product_lines.add("entertainment_tv")
 
         # Mobile-related cohorts (default)
@@ -93,7 +99,9 @@ def create_campaign(campaign_data: CampaignCreate, db: Session = Depends(get_db)
         product_lines = campaign_data.product_lines
         if not product_lines or product_lines == ["mobile_postpaid"]:
             inferred_lines = infer_product_lines_from_cohorts(campaign_data.cohorts)
-            logger.info(f"Inferred product_lines {inferred_lines} from cohorts {campaign_data.cohorts}")
+            logger.info(
+                f"Inferred product_lines {inferred_lines} from cohorts {campaign_data.cohorts}"
+            )
             product_lines = inferred_lines
 
         # Convert Pydantic models to dict/JSON for storage
@@ -103,10 +111,12 @@ def create_campaign(campaign_data: CampaignCreate, db: Session = Depends(get_db)
             objective=campaign_data.objective,
             product_lines=json.dumps(product_lines),
             cohorts=json.dumps(campaign_data.cohorts),
-            promotion_details=json.dumps(campaign_data.promotion_details.model_dump()) if campaign_data.promotion_details else None,
+            promotion_details=json.dumps(campaign_data.promotion_details.model_dump())
+            if campaign_data.promotion_details
+            else None,
             customization=json.dumps(campaign_data.customization.model_dump()),
             created_at=datetime.utcnow(),
-            updated_at=datetime.utcnow()
+            updated_at=datetime.utcnow(),
         )
 
         db.add(campaign)
@@ -123,7 +133,7 @@ def create_campaign(campaign_data: CampaignCreate, db: Session = Depends(get_db)
         logger.error(f"Failed to create campaign: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to create campaign: {str(e)}"
+            detail=f"Failed to create campaign: {str(e)}",
         )
 
 
@@ -148,18 +158,14 @@ def get_campaign(campaign_id: int, db: Session = Depends(get_db)):
         logger.warning(f"Campaign {campaign_id} not found")
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Campaign with ID {campaign_id} not found"
+            detail=f"Campaign with ID {campaign_id} not found",
         )
 
     return CampaignResponse.from_orm_model(campaign)
 
 
 @router.put("/{campaign_id}", response_model=CampaignResponse)
-def update_campaign(
-    campaign_id: int,
-    campaign_data: CampaignUpdate,
-    db: Session = Depends(get_db)
-):
+def update_campaign(campaign_id: int, campaign_data: CampaignUpdate, db: Session = Depends(get_db)):
     """
     Update campaign parameters.
 
@@ -182,7 +188,7 @@ def update_campaign(
         logger.warning(f"Campaign {campaign_id} not found for update")
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Campaign with ID {campaign_id} not found"
+            detail=f"Campaign with ID {campaign_id} not found",
         )
 
     try:
@@ -214,7 +220,7 @@ def update_campaign(
         logger.error(f"Failed to update campaign {campaign_id}: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to update campaign: {str(e)}"
+            detail=f"Failed to update campaign: {str(e)}",
         )
 
 
@@ -242,7 +248,7 @@ def delete_campaign(campaign_id: int, db: Session = Depends(get_db)):
         logger.warning(f"Campaign {campaign_id} not found for deletion")
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Campaign with ID {campaign_id} not found"
+            detail=f"Campaign with ID {campaign_id} not found",
         )
 
     try:
@@ -258,17 +264,19 @@ def delete_campaign(campaign_id: int, db: Session = Depends(get_db)):
         logger.error(f"Failed to delete campaign {campaign_id}: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to delete campaign: {str(e)}"
+            detail=f"Failed to delete campaign: {str(e)}",
         )
 
 
-@router.get("/", response_model=List[CampaignResponse])
+@router.get("/", response_model=list[CampaignResponse])
 def list_campaigns(
     skip: int = Query(0, ge=0, description="Number of records to skip (pagination)"),
     limit: int = Query(20, ge=1, le=100, description="Maximum records to return (1-100)"),
-    channel: Optional[str] = Query(None, pattern="^(email|sms|push)$", description="Filter by channel"),
-    objective: Optional[str] = Query(None, description="Filter by objective"),
-    db: Session = Depends(get_db)
+    channel: str | None = Query(
+        None, pattern="^(email|sms|push)$", description="Filter by channel"
+    ),
+    objective: str | None = Query(None, description="Filter by objective"),
+    db: Session = Depends(get_db),
 ):
     """
     List campaigns with pagination and filtering.
@@ -304,7 +312,9 @@ def list_campaigns(
         # Apply pagination and ordering
         campaigns = query.order_by(Campaign.created_at.desc()).offset(skip).limit(limit).all()
 
-        logger.info(f"Listed {len(campaigns)} campaigns (total: {total}, skip: {skip}, limit: {limit})")
+        logger.info(
+            f"Listed {len(campaigns)} campaigns (total: {total}, skip: {skip}, limit: {limit})"
+        )
 
         # Convert to response schemas
         return [CampaignResponse.from_orm_model(c) for c in campaigns]
@@ -313,5 +323,5 @@ def list_campaigns(
         logger.error(f"Failed to list campaigns: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to list campaigns: {str(e)}"
+            detail=f"Failed to list campaigns: {str(e)}",
         )

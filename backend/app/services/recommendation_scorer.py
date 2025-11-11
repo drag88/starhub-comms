@@ -7,9 +7,10 @@ This module scores generated communications based on:
 3. Objective Effectiveness (25%)
 4. Compliance Safety (15%)
 """
-from typing import Dict, List, Any, Tuple
-import re
+
 import logging
+import re
+from typing import Any
 
 from app.services.config_loader import (
     get_channel_constraints,
@@ -45,10 +46,10 @@ class RecommendationScorer:
         self,
         text: str,
         channel: str,
-        cohorts: List[str],
+        cohorts: list[str],
         objective: str,
         is_promotional: bool = True,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Score a communication variation using the 4-pillar algorithm.
 
@@ -70,7 +71,9 @@ class RecommendationScorer:
                 - compliance_notes: List of compliance issues
         """
         # Score each pillar
-        channel_score, channel_details = self._score_channel_practices(text, channel, is_promotional)
+        channel_score, channel_details = self._score_channel_practices(
+            text, channel, is_promotional
+        )
         cohort_score, cohort_details = self._score_cohort_alignment(text, cohorts)
         objective_score, objective_details = self._score_objective_effectiveness(text, objective)
         compliance_score, compliance_notes = self._score_compliance(text, channel, is_promotional)
@@ -112,7 +115,7 @@ class RecommendationScorer:
 
     def _score_channel_practices(
         self, text: str, channel: str, is_promotional: bool
-    ) -> Tuple[int, Dict[str, Any]]:
+    ) -> tuple[int, dict[str, Any]]:
         """
         Score based on channel best practices (Pillar 1).
 
@@ -145,7 +148,8 @@ class RecommendationScorer:
             # Opt-out requirement for promotional
             if is_promotional:
                 has_opt_out = any(
-                    phrase.lower() in text.lower() for phrase in constraints.get("opt_out_phrases", [])
+                    phrase.lower() in text.lower()
+                    for phrase in constraints.get("opt_out_phrases", [])
                 )
                 if has_opt_out:
                     details["strengths"].append("Includes opt-out instruction")
@@ -220,7 +224,12 @@ class RecommendationScorer:
                     details["issues"].append(f"Body length suboptimal ({body_len} chars)")
 
             # Emoji usage
-            emoji_count = len(re.findall(r'[\U0001F600-\U0001F64F\U0001F300-\U0001F5FF\U0001F680-\U0001F6FF\U0001F1E0-\U0001F1FF]', text))
+            emoji_count = len(
+                re.findall(
+                    r"[\U0001F600-\U0001F64F\U0001F300-\U0001F5FF\U0001F680-\U0001F6FF\U0001F1E0-\U0001F1FF]",
+                    text,
+                )
+            )
             if 1 <= emoji_count <= 3:
                 score += 5
                 details["strengths"].append("Appropriate emoji usage")
@@ -234,7 +243,7 @@ class RecommendationScorer:
 
         return max(0, min(100, score)), details
 
-    def _score_cohort_alignment(self, text: str, cohorts: List[str]) -> Tuple[int, Dict[str, Any]]:
+    def _score_cohort_alignment(self, text: str, cohorts: list[str]) -> tuple[int, dict[str, Any]]:
         """
         Score based on cohort alignment (Pillar 2).
 
@@ -296,7 +305,9 @@ class RecommendationScorer:
 
         return max(0, min(100, score)), details
 
-    def _score_objective_effectiveness(self, text: str, objective: str) -> Tuple[int, Dict[str, Any]]:
+    def _score_objective_effectiveness(
+        self, text: str, objective: str
+    ) -> tuple[int, dict[str, Any]]:
         """
         Score based on objective effectiveness (Pillar 3).
 
@@ -402,7 +413,7 @@ class RecommendationScorer:
 
     def _score_compliance(
         self, text: str, channel: str, is_promotional: bool
-    ) -> Tuple[int, List[str]]:
+    ) -> tuple[int, list[str]]:
         """
         Score based on compliance safety (Pillar 4).
 
@@ -437,7 +448,16 @@ class RecommendationScorer:
         # Pricing disclosure
         has_price = "$" in text or "free" in text_lower
         if has_price:
-            disclosure_phrases = ["/mth", "month", "/mo", "contract", "t&cs", "t&c", "terms", "conditions"]
+            disclosure_phrases = [
+                "/mth",
+                "month",
+                "/mo",
+                "contract",
+                "t&cs",
+                "t&c",
+                "terms",
+                "conditions",
+            ]
             has_disclosure = any(phrase in text_lower for phrase in disclosure_phrases)
             if not has_disclosure:
                 score -= 10
@@ -471,9 +491,9 @@ class RecommendationScorer:
         cohort: int,
         objective: int,
         compliance: int,
-        channel_details: Dict[str, Any],
-        cohort_details: Dict[str, Any],
-        objective_details: Dict[str, Any],
+        channel_details: dict[str, Any],
+        cohort_details: dict[str, Any],
+        objective_details: dict[str, Any],
     ) -> str:
         """
         Generate natural language reasoning for the score.
@@ -496,19 +516,29 @@ class RecommendationScorer:
         # Objective assessment
         if objective >= 85:
             obj_keywords = ", ".join(objective_details.get("matched_keywords", [])[:3])
-            parts.append(f"Strong {objective_details['objective']} messaging with {obj_keywords} (Objective: {objective}/100)")
+            parts.append(
+                f"Strong {objective_details['objective']} messaging with {obj_keywords} (Objective: {objective}/100)"
+            )
         elif objective >= 70:
-            parts.append(f"Good {objective_details['objective']} effectiveness (Objective: {objective}/100)")
+            parts.append(
+                f"Good {objective_details['objective']} effectiveness (Objective: {objective}/100)"
+            )
         else:
             issues = ", ".join(objective_details.get("issues", []))
-            parts.append(f"Weak {objective_details['objective']} messaging - {issues} (Objective: {objective}/100)")
+            parts.append(
+                f"Weak {objective_details['objective']} messaging - {issues} (Objective: {objective}/100)"
+            )
 
         # Channel assessment
         if channel >= 90:
             strengths = ", ".join(channel_details.get("strengths", [])[:2])
-            parts.append(f"Excellent {channel_details['channel'].upper()} formatting - {strengths} (Channel: {channel}/100)")
+            parts.append(
+                f"Excellent {channel_details['channel'].upper()} formatting - {strengths} (Channel: {channel}/100)"
+            )
         elif channel >= 70:
-            parts.append(f"Good {channel_details['channel'].upper()} practices (Channel: {channel}/100)")
+            parts.append(
+                f"Good {channel_details['channel'].upper()} practices (Channel: {channel}/100)"
+            )
         else:
             issues = ", ".join(channel_details.get("issues", [])[:2])
             parts.append(f"Channel issues - {issues} (Channel: {channel}/100)")
@@ -540,45 +570,62 @@ class RecommendationScorer:
     def _has_cta(self, text: str) -> bool:
         """Check if text contains a clear call-to-action."""
         cta_phrases = [
-            "click", "tap", "visit", "call", "text", "reply", "get", "claim",
-            "sign up", "subscribe", "activate", "upgrade", "start", "join",
-            "shop", "buy", "order", "learn more", "find out", "discover"
+            "click",
+            "tap",
+            "visit",
+            "call",
+            "text",
+            "reply",
+            "get",
+            "claim",
+            "sign up",
+            "subscribe",
+            "activate",
+            "upgrade",
+            "start",
+            "join",
+            "shop",
+            "buy",
+            "order",
+            "learn more",
+            "find out",
+            "discover",
         ]
         return any(phrase in text.lower() for phrase in cta_phrases)
 
-    def _parse_email(self, text: str) -> Tuple[str, str]:
+    def _parse_email(self, text: str) -> tuple[str, str]:
         """Parse email into subject and body."""
         # Look for "Subject:" or similar patterns
         if "subject:" in text.lower():
-            parts = re.split(r'subject:\s*', text, flags=re.IGNORECASE, maxsplit=1)
+            parts = re.split(r"subject:\s*", text, flags=re.IGNORECASE, maxsplit=1)
             if len(parts) > 1:
                 remaining = parts[1]
                 # Split on newline to separate subject from body
-                lines = remaining.split('\n', 1)
+                lines = remaining.split("\n", 1)
                 subject = lines[0].strip()
                 body = lines[1].strip() if len(lines) > 1 else ""
                 return subject, body
 
         # If no explicit subject marker, assume first line is subject
-        lines = text.split('\n', 1)
+        lines = text.split("\n", 1)
         subject = lines[0].strip() if lines else ""
         body = lines[1].strip() if len(lines) > 1 else ""
         return subject, body
 
-    def _parse_push(self, text: str) -> Tuple[str, str]:
+    def _parse_push(self, text: str) -> tuple[str, str]:
         """Parse push notification into title and body."""
         # Look for "Title:" or similar patterns
         if "title:" in text.lower():
-            parts = re.split(r'title:\s*', text, flags=re.IGNORECASE, maxsplit=1)
+            parts = re.split(r"title:\s*", text, flags=re.IGNORECASE, maxsplit=1)
             if len(parts) > 1:
                 remaining = parts[1]
-                lines = remaining.split('\n', 1)
+                lines = remaining.split("\n", 1)
                 title = lines[0].strip()
                 body = lines[1].strip() if len(lines) > 1 else ""
                 return title, body
 
         # If no explicit title marker, assume first line is title
-        lines = text.split('\n', 1)
+        lines = text.split("\n", 1)
         title = lines[0].strip() if lines else ""
         body = lines[1].strip() if len(lines) > 1 else ""
         return title, body
@@ -605,5 +652,13 @@ class RecommendationScorer:
 
     def _has_professional_tone(self, text: str) -> bool:
         """Check if text has a professional, informative tone."""
-        professional_words = ["inform", "update", "notice", "please", "ensure", "maintain", "service"]
+        professional_words = [
+            "inform",
+            "update",
+            "notice",
+            "please",
+            "ensure",
+            "maintain",
+            "service",
+        ]
         return sum(1 for word in professional_words if word in text.lower()) >= 2

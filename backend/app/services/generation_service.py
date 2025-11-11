@@ -4,8 +4,9 @@ Integration service combining communication generation and scoring.
 This service orchestrates the end-to-end process of generating
 communication variations and scoring them for recommendations.
 """
-from typing import Dict, List, Any, Optional
+
 import logging
+from typing import Any
 
 from app.services.communication_generator import CommunicationGenerator
 from app.services.recommendation_scorer import RecommendationScorer
@@ -22,7 +23,7 @@ class GenerationService:
     and return ranked recommendations.
     """
 
-    def __init__(self, api_key: Optional[str] = None):
+    def __init__(self, api_key: str | None = None):
         """
         Initialize the generation service.
 
@@ -36,13 +37,13 @@ class GenerationService:
     def generate_and_score(
         self,
         channel: str,
-        cohorts: List[str],
+        cohorts: list[str],
         objective: str,
-        product_lines: List[str],
-        promotion_details: Optional[Dict[str, Any]] = None,
-        customization: Optional[Dict[str, Any]] = None,
+        product_lines: list[str],
+        promotion_details: dict[str, Any] | None = None,
+        customization: dict[str, Any] | None = None,
         is_promotional: bool = True,
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Generate and score communication variations.
 
@@ -153,13 +154,13 @@ class GenerationService:
     def get_top_recommendation(
         self,
         channel: str,
-        cohorts: List[str],
+        cohorts: list[str],
         objective: str,
-        product_lines: List[str],
-        promotion_details: Optional[Dict[str, Any]] = None,
-        customization: Optional[Dict[str, Any]] = None,
+        product_lines: list[str],
+        promotion_details: dict[str, Any] | None = None,
+        customization: dict[str, Any] | None = None,
         is_promotional: bool = True,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Generate variations and return only the top recommendation.
 
@@ -192,14 +193,14 @@ class GenerationService:
     def regenerate_and_score(
         self,
         channel: str,
-        cohorts: List[str],
+        cohorts: list[str],
         objective: str,
-        product_lines: List[str],
-        exclude_texts: List[str],
-        promotion_details: Optional[Dict[str, Any]] = None,
-        customization: Optional[Dict[str, Any]] = None,
+        product_lines: list[str],
+        exclude_texts: list[str],
+        promotion_details: dict[str, Any] | None = None,
+        customization: dict[str, Any] | None = None,
         is_promotional: bool = True,
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Regenerate variations, excluding similar ones.
 
@@ -253,10 +254,10 @@ class GenerationService:
         self,
         text: str,
         channel: str,
-        cohorts: List[str],
+        cohorts: list[str],
         objective: str,
         is_promotional: bool = True,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Score an existing communication text.
 
@@ -282,12 +283,12 @@ class GenerationService:
 
     def batch_score(
         self,
-        variations: List[Dict[str, str]],
+        variations: list[dict[str, str]],
         channel: str,
-        cohorts: List[str],
+        cohorts: list[str],
         objective: str,
         is_promotional: bool = True,
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Score multiple existing variations in batch.
 

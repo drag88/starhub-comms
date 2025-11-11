@@ -1,6 +1,7 @@
 import axios from 'axios';
 import type { CampaignFormData, Campaign, Cohort, Product, Objective } from '/Users/asreenivas/Library/CloudStorage/OneDrive-StarHubLtd/02_Data_Analytics/Scripts/29. Customer Comms Generator/frontend/src/types/campaign';
 import type { GenerationResponse, Communication } from '/Users/asreenivas/Library/CloudStorage/OneDrive-StarHubLtd/02_Data_Analytics/Scripts/29. Customer Comms Generator/frontend/src/types/communication';
+import type { Creative, CreativeListResponse } from '/Users/asreenivas/Library/CloudStorage/OneDrive-StarHubLtd/02_Data_Analytics/Scripts/29. Customer Comms Generator/frontend/src/types/creative';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
@@ -41,6 +42,9 @@ export const campaignAPI = {
 
   regenerate: (id: number, updatedParams: Partial<CampaignFormData>) =>
     apiClient.post<GenerationResponse>(`/api/v1/campaigns/${id}/regenerate`, updatedParams),
+
+  generateCreatives: (id: number) =>
+    apiClient.post<CreativeListResponse>(`/api/v1/campaigns/${id}/generate-creatives`),
 };
 
 export const communicationAPI = {
@@ -49,6 +53,30 @@ export const communicationAPI = {
 
   update: (id: number, data: { is_selected?: boolean; edited_text?: string }) =>
     apiClient.put<Communication>(`/api/v1/communications/${id}`, data),
+};
+
+export const creativeAPI = {
+  generate: (campaignId: number) =>
+    apiClient.post<CreativeListResponse>(
+      `/api/v1/campaigns/${campaignId}/generate-creatives`
+    ),
+
+  list: (campaignId: number) =>
+    apiClient.get<CreativeListResponse>(
+      `/api/v1/campaigns/${campaignId}/creatives`
+    ),
+
+  get: (creativeId: number) =>
+    apiClient.get<Creative>(`/api/v1/creatives/${creativeId}`),
+
+  select: (creativeId: number, isSelected: boolean) =>
+    apiClient.put<Creative>(
+      `/api/v1/creatives/${creativeId}/select`,
+      { is_selected: isSelected }
+    ),
+
+  delete: (creativeId: number) =>
+    apiClient.delete(`/api/v1/creatives/${creativeId}`),
 };
 
 export const utilityAPI = {

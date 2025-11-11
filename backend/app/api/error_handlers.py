@@ -1,12 +1,14 @@
 """
 Error handling middleware and exception handlers for the API.
 """
-from fastapi import Request, status
-from fastapi.responses import JSONResponse
-from fastapi.exceptions import RequestValidationError
-from starlette.exceptions import HTTPException as StarletteHTTPException
-from datetime import datetime
+
 import logging
+from datetime import datetime
+
+from fastapi import Request, status
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +36,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
             "type": error.get("type"),
             "loc": error.get("loc"),
             "msg": error.get("msg"),
-            "input": error.get("input")
+            "input": error.get("input"),
         }
         serializable_errors.append(error_dict)
 
@@ -44,8 +46,8 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
             "detail": "Validation error",
             "error_type": "ValidationError",
             "errors": serializable_errors,
-            "timestamp": datetime.utcnow().isoformat()
-        }
+            "timestamp": datetime.utcnow().isoformat(),
+        },
     )
 
 
@@ -69,8 +71,8 @@ async def http_exception_handler(request: Request, exc: StarletteHTTPException):
         content={
             "detail": exc.detail,
             "error_type": f"HTTP{exc.status_code}Error",
-            "timestamp": datetime.utcnow().isoformat()
-        }
+            "timestamp": datetime.utcnow().isoformat(),
+        },
     )
 
 
@@ -95,8 +97,8 @@ async def general_exception_handler(request: Request, exc: Exception):
             "detail": "Internal server error",
             "error_type": type(exc).__name__,
             "message": str(exc),
-            "timestamp": datetime.utcnow().isoformat()
-        }
+            "timestamp": datetime.utcnow().isoformat(),
+        },
     )
 
 
@@ -121,6 +123,6 @@ async def database_exception_handler(request: Request, exc: Exception):
             "detail": "Database service unavailable",
             "error_type": "DatabaseError",
             "message": str(exc),
-            "timestamp": datetime.utcnow().isoformat()
-        }
+            "timestamp": datetime.utcnow().isoformat(),
+        },
     )

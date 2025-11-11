@@ -4,23 +4,22 @@ Test runner for demonstrating generation and scoring workflow without API calls.
 This script demonstrates the complete workflow using mock data, allowing
 validation of the scoring algorithm without requiring API credentials.
 """
+
 import sys
 from pathlib import Path
-from typing import Dict, Any
-import json
+from typing import Any
 
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
-from app.services.recommendation_scorer import RecommendationScorer
 from tests.mock_responses import (
-    SMS_PROMOTION_DEAL_SEEKERS,
     EMAIL_RETENTION_HIGH_VALUE,
     PUSH_SPORTS_FANS,
-    SMS_SERVICE_UPDATE,
-    EMAIL_UPSELL_FAMILIES,
     SCORING_TEST_CASES,
+    SMS_PROMOTION_DEAL_SEEKERS,
 )
+
+from app.services.recommendation_scorer import RecommendationScorer
 
 
 def print_header(text: str) -> None:
@@ -30,19 +29,19 @@ def print_header(text: str) -> None:
     print("=" * 80)
 
 
-def print_variation(variation_num: int, text: str, score_result: Dict[str, Any]) -> None:
+def print_variation(variation_num: int, text: str, score_result: dict[str, Any]) -> None:
     """Print a variation with its score."""
     print(f"\n--- VARIATION {variation_num} ---")
     print(f"Text: {text[:100]}..." if len(text) > 100 else f"Text: {text}")
-    print(f"\nScores:")
+    print("\nScores:")
     print(f"  Total Score:      {score_result['total_score']}/100")
     print(f"  Channel Score:    {score_result['channel_score']}/100")
     print(f"  Cohort Score:     {score_result['cohort_score']}/100")
     print(f"  Objective Score:  {score_result['objective_score']}/100")
     print(f"  Compliance Score: {score_result['compliance_score']}/100")
-    print(f"\nReasoning:")
+    print("\nReasoning:")
     print(f"  {score_result['reasoning']}")
-    print(f"\nCompliance Notes:")
+    print("\nCompliance Notes:")
     for note in score_result["compliance_notes"]:
         print(f"  - {note}")
 
@@ -52,7 +51,7 @@ def parse_mock_variations(mock_text: str) -> list:
     import re
 
     variations = []
-    pattern = r'VARIATION\s+(\d+):\s*(.+?)(?=VARIATION\s+\d+:|$)'
+    pattern = r"VARIATION\s+(\d+):\s*(.+?)(?=VARIATION\s+\d+:|$)"
     matches = re.findall(pattern, mock_text, re.DOTALL | re.IGNORECASE)
 
     for variation_num, variation_text in matches:
@@ -68,10 +67,10 @@ def test_scenario_1():
     scorer = RecommendationScorer()
     variations = parse_mock_variations(SMS_PROMOTION_DEAL_SEEKERS)
 
-    print(f"\nChannel: SMS")
-    print(f"Cohorts: At-Risk Churn, Deal Seekers")
-    print(f"Objective: Promotion")
-    print(f"Product: 10Gbps Fiber Broadband")
+    print("\nChannel: SMS")
+    print("Cohorts: At-Risk Churn, Deal Seekers")
+    print("Objective: Promotion")
+    print("Product: 10Gbps Fiber Broadband")
     print(f"\nGenerated {len(variations)} variations. Scoring each...\n")
 
     scored_variations = []
@@ -111,10 +110,10 @@ def test_scenario_2():
     scorer = RecommendationScorer()
     variations = parse_mock_variations(EMAIL_RETENTION_HIGH_VALUE)
 
-    print(f"\nChannel: Email")
-    print(f"Cohorts: High-Value Customers")
-    print(f"Objective: Retention")
-    print(f"Product: Premium 10Gbps Plan")
+    print("\nChannel: Email")
+    print("Cohorts: High-Value Customers")
+    print("Objective: Retention")
+    print("Product: Premium 10Gbps Plan")
     print(f"\nGenerated {len(variations)} variations. Scoring each...\n")
 
     scored_variations = []
@@ -154,10 +153,10 @@ def test_scenario_3():
     scorer = RecommendationScorer()
     variations = parse_mock_variations(PUSH_SPORTS_FANS)
 
-    print(f"\nChannel: Push Notification")
-    print(f"Cohorts: Sports Fans")
-    print(f"Objective: Promotion")
-    print(f"Product: Sports+ Subscription")
+    print("\nChannel: Push Notification")
+    print("Cohorts: Sports Fans")
+    print("Objective: Promotion")
+    print("Product: Sports+ Subscription")
     print(f"\nGenerated {len(variations)} variations. Scoring each...\n")
 
     scored_variations = []
@@ -252,7 +251,7 @@ def test_compliance_validation():
         )
 
         print(f"Compliance Score: {result['compliance_score']}/100")
-        print(f"Compliance Notes:")
+        print("Compliance Notes:")
         for note in result["compliance_notes"]:
             print(f"  - {note}")
 
@@ -266,15 +265,19 @@ def test_compliance_validation():
             print("  ✓ PASS (Critical issue detected)")
         elif "Pricing disclosure" in test["expected"]:
             # Check for pricing disclosure warning in compliance notes (check this before "warning" to avoid substring match)
-            assert any("pricing" in note.lower() or "t&cs" in note.lower() or "terms" in note.lower()
-                       for note in result["compliance_notes"]), f"Failed: {test['name']}"
+            assert any(
+                "pricing" in note.lower() or "t&cs" in note.lower() or "terms" in note.lower()
+                for note in result["compliance_notes"]
+            ), f"Failed: {test['name']}"
             print("  ✓ PASS (Pricing disclosure warning detected)")
         elif "warning" in test["expected"]:
             assert result["compliance_score"] < 80, f"Failed: {test['name']}"
             print("  ✓ PASS (Warning detected)")
         elif "issues flagged" in test["expected"]:
-            assert any("REVIEW" in note or "unsubstantiated" in note.lower()
-                       for note in result["compliance_notes"])
+            assert any(
+                "REVIEW" in note or "unsubstantiated" in note.lower()
+                for note in result["compliance_notes"]
+            )
             print("  ✓ PASS (Issues flagged)")
 
 

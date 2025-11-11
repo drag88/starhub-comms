@@ -1,9 +1,12 @@
 """
 Promotion Upload model for storing promotion details and attachments.
 """
-from datetime import datetime, date
-from sqlalchemy import Column, Integer, Text, Date, DateTime, ForeignKey
+
+from datetime import datetime
+
+from sqlalchemy import Column, Date, DateTime, ForeignKey, Integer, Text
 from sqlalchemy.orm import relationship
+
 from database import Base
 
 
@@ -27,9 +30,7 @@ class PromotionUpload(Base):
 
     promotion_id = Column(Integer, primary_key=True, autoincrement=True)
     campaign_id = Column(
-        Integer,
-        ForeignKey("campaigns.campaign_id", ondelete="CASCADE"),
-        nullable=False
+        Integer, ForeignKey("campaigns.campaign_id", ondelete="CASCADE"), nullable=False
     )
     promotion_name = Column(Text, nullable=False)
     pricing_details = Column(Text, nullable=True)  # JSON object

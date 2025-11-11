@@ -1,0 +1,95 @@
+{
+  "version": "1.0.0",
+  "description": "Skill activation rules for StarHub Customer Communications Generator",
+  "skills": {
+    "starhub-comms": {
+      "type": "domain",
+      "enforcement": "suggest",
+      "priority": "high",
+      "description": "Generate customer communications for StarHub across all channels",
+      "promptTriggers": {
+        "keywords": [
+          "campaign",
+          "email",
+          "sms",
+          "push notification",
+          "customer communication",
+          "marketing message",
+          "promotional",
+          "retention",
+          "service update",
+          "billing notification",
+          "customer message",
+          "mobile campaign",
+          "broadband campaign",
+          "entertainment campaign",
+          "prepaid",
+          "postpaid"
+        ],
+        "intentPatterns": [
+          "(create|generate|write|draft).*?(email|sms|push|campaign|communication)",
+          "(marketing|retention|promotional).*?(message|content|campaign)",
+          "(customer|subscriber).*?(communication|message|notification)",
+          "(starhub|mobile|broadband|entertainment).*?(campaign|message)"
+        ]
+      }
+    },
+    "starhub-campaign-creatives": {
+      "type": "domain",
+      "enforcement": "suggest",
+      "priority": "high",
+      "description": "Generate AI-powered campaign creative images for StarHub marketing",
+      "promptTriggers": {
+        "keywords": [
+          "creative",
+          "image",
+          "header",
+          "visual",
+          "campaign image",
+          "email header",
+          "push header",
+          "gemini",
+          "midjourney",
+          "seedream",
+          "ai image",
+          "campaign visual",
+          "creative generation",
+          "image generation"
+        ],
+        "intentPatterns": [
+          "(create|generate|make).*?(creative|image|header|visual)",
+          "(ai|gemini|midjourney|seedream).*?(image|creative|visual)",
+          "(campaign|email|push).*?(header|image|visual|creative)",
+          "generate.*?(creative|image).*?(campaign|email)"
+        ]
+      }
+    },
+    "uplyft-brand": {
+      "type": "domain",
+      "enforcement": "suggest",
+      "priority": "medium",
+      "description": "Apply uplyft.ai brand identity and guidelines to content",
+      "promptTriggers": {
+        "keywords": [
+          "uplyft",
+          "brand",
+          "voice",
+          "guidelines",
+          "style guide",
+          "brand identity",
+          "copyrighter",
+          "matchmaker",
+          "athena",
+          "fashion retail",
+          "ai terminology"
+        ],
+        "intentPatterns": [
+          "(apply|use|follow).*?(brand|voice|guidelines)",
+          "uplyft.*?(style|brand|identity|voice)",
+          "(copyrighter|matchmaker|athena).*?(content|documentation)",
+          "brand.*?(guidelines|identity|voice)"
+        ]
+      }
+    }
+  }
+}
