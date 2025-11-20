@@ -28,19 +28,32 @@ class CustomizationOptions(BaseModel):
         default="optimal", description="Length preference: shorter, optimal, or longer"
     )
 
-    @field_validator("tone")
+    @field_validator("tone", mode="before")
     @classmethod
     def validate_tone(cls, v):
         """Validate tone is one of allowed values."""
+        v = v.lower() if isinstance(v, str) else v
         allowed = ["friendly", "urgent", "premium", "value-focused", "professional"]
         if v not in allowed:
             raise ValueError(f"Tone must be one of: {', '.join(allowed)}")
         return v
 
-    @field_validator("length_preference")
+    @field_validator("length_preference", mode="before")
     @classmethod
     def validate_length(cls, v):
         """Validate length preference is one of allowed values."""
+        if isinstance(v, str):
+            v = v.lower()
+            # Map common incorrect values
+            mapping = {
+                "short": "shorter",
+                "medium": "optimal",
+                "long": "longer",
+                "normal": "optimal",
+                "default": "optimal",
+            }
+            v = mapping.get(v, v)
+
         allowed = ["shorter", "optimal", "longer"]
         if v not in allowed:
             raise ValueError(f"Length preference must be one of: {', '.join(allowed)}")
@@ -86,19 +99,21 @@ class CampaignCreate(BaseModel):
         ..., description="Customization options for communication generation"
     )
 
-    @field_validator("objective")
+    @field_validator("objective", mode="before")
     @classmethod
     def validate_objective(cls, v):
         """Validate objective is one of allowed values."""
+        v = v.lower() if isinstance(v, str) else v
         allowed = ["promotion", "retention", "upsell", "cross_sell", "service_update", "billing"]
         if v not in allowed:
             raise ValueError(f"Objective must be one of: {', '.join(allowed)}")
         return v
 
-    @field_validator("channel")
+    @field_validator("channel", mode="before")
     @classmethod
     def validate_channel(cls, v):
         """Validate channel is one of allowed values."""
+        v = v.lower() if isinstance(v, str) else v
         allowed = ["email", "sms", "push"]
         if v not in allowed:
             raise ValueError(f"Channel must be one of: {', '.join(allowed)}")
@@ -126,11 +141,12 @@ class CampaignUpdate(BaseModel):
         None, description="Updated customization options"
     )
 
-    @field_validator("objective")
+    @field_validator("objective", mode="before")
     @classmethod
     def validate_objective(cls, v):
         """Validate objective if provided."""
         if v is not None:
+            v = v.lower() if isinstance(v, str) else v
             allowed = [
                 "promotion",
                 "retention",
@@ -143,11 +159,12 @@ class CampaignUpdate(BaseModel):
                 raise ValueError(f"Objective must be one of: {', '.join(allowed)}")
         return v
 
-    @field_validator("channel")
+    @field_validator("channel", mode="before")
     @classmethod
     def validate_channel(cls, v):
         """Validate channel if provided."""
         if v is not None:
+            v = v.lower() if isinstance(v, str) else v
             allowed = ["email", "sms", "push"]
             if v not in allowed:
                 raise ValueError(f"Channel must be one of: {', '.join(allowed)}")

@@ -145,3 +145,21 @@ class CreativeSelectionRequest(BaseModel):
     )
 
     model_config = ConfigDict(json_schema_extra={"example": {"is_selected": True}})
+
+
+class CreativeRegenerateRequest(BaseModel):
+    """Schema for creative regeneration request with feedback."""
+
+    feedback: str | None = Field(
+        None,
+        max_length=500,
+        description="User feedback on current creatives to guide regeneration",
+    )
+
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "feedback": "Make the images more vibrant and include more dynamic poses"
+            }
+        }
+    )

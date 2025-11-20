@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import type { Creative } from '../../types/creative';
+import { API_BASE_URL } from '../../services/api';
 
 interface ImageViewerModalProps {
   creatives: Creative[];
@@ -19,10 +20,9 @@ export const ImageViewerModal: React.FC<ImageViewerModalProps> = ({
   if (!isOpen || creatives.length === 0) return null;
 
   const currentCreative = creatives[currentIndex];
-  const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
   const imageUrl = currentCreative.image_url.startsWith('http')
     ? currentCreative.image_url
-    : `${baseUrl}${currentCreative.image_url}`;
+    : `${API_BASE_URL}${currentCreative.image_url}`;
 
   const handlePrevious = () => {
     setCurrentIndex((prev) => (prev > 0 ? prev - 1 : creatives.length - 1));

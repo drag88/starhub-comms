@@ -2,6 +2,7 @@ import React from 'react';
 import type { Creative } from '../types/creative';
 import { Button } from './shared/Button';
 import { RecommendationBadge } from './ResultsDisplay/RecommendationBadge';
+import { API_BASE_URL } from '../services/api';
 
 interface CreativeCardProps {
   creative: Creative;
@@ -18,7 +19,7 @@ export const CreativeCard: React.FC<CreativeCardProps> = ({
 }) => {
   const handleDownload = () => {
     const link = document.createElement('a');
-    link.href = `http://localhost:8000${creative.image_url}`;
+    link.href = `${API_BASE_URL}${creative.image_url}`;
     link.download = creative.image_filename;
     document.body.appendChild(link);
     link.click();
@@ -49,7 +50,7 @@ export const CreativeCard: React.FC<CreativeCardProps> = ({
         aria-label={`View full size image of variant ${creative.variant_number}`}
       >
         <img
-          src={`http://localhost:8000${creative.image_url}`}
+          src={`${API_BASE_URL}${creative.image_url}`}
           alt={`Creative variant ${creative.variant_number}, recommendation score ${creative.recommendation_score} out of 100`}
           className="w-full h-auto rounded-t transition-opacity group-hover:opacity-90"
           loading="lazy"

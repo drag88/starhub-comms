@@ -3,7 +3,7 @@ import type { CampaignFormData, Campaign, Cohort, Product, Objective } from '/Us
 import type { GenerationResponse, Communication } from '/Users/asreenivas/Library/CloudStorage/OneDrive-StarHubLtd/02_Data_Analytics/Scripts/29. Customer Comms Generator/frontend/src/types/communication';
 import type { Creative, CreativeListResponse } from '/Users/asreenivas/Library/CloudStorage/OneDrive-StarHubLtd/02_Data_Analytics/Scripts/29. Customer Comms Generator/frontend/src/types/creative';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -59,6 +59,12 @@ export const creativeAPI = {
   generate: (campaignId: number) =>
     apiClient.post<CreativeListResponse>(
       `/api/v1/campaigns/${campaignId}/generate-creatives`
+    ),
+
+  regenerate: (campaignId: number, feedback?: string) =>
+    apiClient.post<CreativeListResponse>(
+      `/api/v1/campaigns/${campaignId}/regenerate-creatives`,
+      { feedback }
     ),
 
   list: (campaignId: number) =>

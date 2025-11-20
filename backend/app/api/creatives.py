@@ -14,6 +14,7 @@ from app.models.campaign import Campaign
 from app.models.creative import GeneratedCreative
 from app.schemas.creative import (
     CreativeListResponse,
+    CreativeRegenerateRequest,
     CreativeSelectionRequest,
     GeneratedCreativeResponse,
 )
@@ -170,6 +171,143 @@ async def generate_campaign_creatives(campaign_id: int, db: Session = Depends(ge
     )
 
     # Convert to response schemas
+    creative_responses = [GeneratedCreativeResponse.from_orm_model(c) for c in creatives]
+
+    return CreativeListResponse.create(campaign_id=campaign_id, creatives=creative_responses)
+
+
+@router.post(
+    "/campaigns/{campaign_id}/regenerate-creatives",
+    response_model=CreativeListResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+async def regenerate_campaign_creatives(
+    campaign_id: int,
+    request: CreativeRegenerateRequest,
+    db: Session = Depends(get_db),
+):
+    """
+    Regenerate creative images with user feedback.
+
+    This endpoint deletes existing creatives and generates new ones incorporating
+    user feedback. The feedback is used to refine the visual concept and style.
+
+    Process:
+    1. Load campaign from database (404 if not found)
+    2. Delete existing creatives for this campaign
+    3. Incorporate user feedback into visual concept
+    4. Generate 3 new creative variants
+    5. Score and save new creatives
+    6. Return ranked variations
+
+    Args:
+        campaign_id: Campaign ID to regenerate creatives for
+        request: Regeneration request with optional feedback
+        db: Database session
+
+    Returns:
+        CreativeListResponse with 3 new creatives sorted by score
+
+    Raises:
+        HTTPException 404: Campaign not found
+        HTTPException 500: Generation failed
+
+    Example:
+        POST /api/v1/campaigns/123/regenerate-creatives
+        Body: {"feedback": "Make images more vibrant with dynamic poses"}
+    """
+    # Load campaign
+    campaign = db.query(Campaign).filter(Campaign.campaign_id == campaign_id).first()
+    if not campaign:
+        logger.warning(f"Campaign {campaign_id} not found for creative regeneration")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Campaign with ID {campaign_id} not found",
+        )
+
+    # Delete existing creatives
+    existing_creatives = (
+        db.query(GeneratedCreative)
+        .filter(GeneratedCreative.campaign_id == campaign_id)
+        .all()
+    )
+
+    for creative in existing_creatives:
+        # Delete image file from disk
+        image_path = Path("backend") / "static" / "creatives" / creative.image_filename
+        if image_path.exists():
+            os.remove(image_path)
+            logger.info(f"Deleted image file: {creative.image_filename}")
+
+        # Delete database record
+        db.delete(creative)
+
+    db.commit()
+    logger.info(f"Deleted {len(existing_creatives)} existing creatives for campaign {campaign_id}")
+
+    # Parse campaign JSON fields
+    try:
+        product_lines = (
+            json.loads(campaign.product_lines)
+            if isinstance(campaign.product_lines, str)
+            else campaign.product_lines
+        )
+        cohorts = (
+            json.loads(campaign.cohorts) if isinstance(campaign.cohorts, str) else campaign.cohorts
+        )
+
+        channel_type = f"{campaign.channel}_header"
+
+        campaign_data = {
+            "campaign_id": campaign_id,
+            "campaign_name": campaign.campaign_name,
+            "channel": campaign.channel,
+            "objective": campaign.objective,
+            "product_lines": product_lines,
+            "cohorts": cohorts,
+        }
+
+        # Build visual concept with feedback
+        visual_concept = f"{campaign.campaign_name} - {campaign.objective}"
+        if request.feedback:
+            visual_concept += f". User feedback: {request.feedback}"
+            logger.info(f"Regenerating with feedback: {request.feedback}")
+
+    except json.JSONDecodeError as e:
+        logger.error(f"Failed to parse campaign JSON fields: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Campaign data corrupted",
+        )
+
+    # Generate new creatives
+    try:
+        service = CreativeGenerationService()
+        results = await service.generate_and_score(
+            campaign_id=campaign_id,
+            channel=channel_type,
+            visual_concept=visual_concept,
+            campaign_data=campaign_data,
+            db=db,
+        )
+
+        logger.info(f"Regenerated {len(results)} creative variations for campaign {campaign_id}")
+
+    except Exception as e:
+        logger.error(f"Creative regeneration failed: {type(e).__name__}: {str(e)}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Creative regeneration failed: {str(e)}",
+        )
+
+    # Load new creatives
+    creatives = (
+        db.query(GeneratedCreative)
+        .filter(GeneratedCreative.campaign_id == campaign_id)
+        .order_by(GeneratedCreative.recommendation_score.desc())
+        .all()
+    )
+
     creative_responses = [GeneratedCreativeResponse.from_orm_model(c) for c in creatives]
 
     return CreativeListResponse.create(campaign_id=campaign_id, creatives=creative_responses)

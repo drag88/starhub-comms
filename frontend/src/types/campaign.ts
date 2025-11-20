@@ -28,6 +28,7 @@ export interface CampaignFormData {
   cohorts: string[];
   promotion_details?: PromotionDetails;
   customization: CustomizationOptions;
+  generate_creatives?: boolean; // UI-only flag for creative generation
 }
 
 export interface Campaign extends CampaignFormData {
