@@ -36,7 +36,7 @@ export const Textarea: React.FC<TextareaProps> = ({
           <p className="form-error">{error}</p>
         )}
         {showCharCount && (
-          <p className={`text-sm ${charCount > (maxLength || Infinity) ? 'text-danger' : 'text-gray-500'} ml-auto`}>
+          <p className={`text-sm ${charCount > (maxLength || Infinity) ? 'text-danger' : 'text-slate-500'} ml-auto`}>
             {charCount}{maxLength ? `/${maxLength}` : ''} characters
           </p>
         )}

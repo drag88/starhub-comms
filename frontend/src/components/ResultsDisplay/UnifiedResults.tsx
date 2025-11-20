@@ -56,8 +56,8 @@ export const UnifiedResults: React.FC<UnifiedResultsProps> = ({
     return (
       <div className="card h-full flex flex-col items-center justify-center">
         <LoadingSpinner size="lg" />
-        <p className="mt-4 text-gray-600">Generating communications...</p>
-        <p className="text-sm text-gray-500">This may take 30-60 seconds</p>
+        <p className="mt-4 text-slate-400">Generating communications...</p>
+        <p className="text-sm text-slate-500">This may take 30-60 seconds</p>
       </div>
     );
   }
@@ -67,10 +67,10 @@ export const UnifiedResults: React.FC<UnifiedResultsProps> = ({
     return (
       <div className="card h-full flex flex-col items-center justify-center text-center">
         <div className="text-6xl mb-4">💬</div>
-        <h3 className="text-xl font-semibold text-gray-900 mb-2">
+        <h3 className="text-xl font-semibold text-slate-100 mb-2">
           No Communications Yet
         </h3>
-        <p className="text-gray-600 max-w-md">
+        <p className="text-slate-400 max-w-md">
           Fill out the campaign form and click "Generate Communications" to create
           AI-powered marketing messages.
         </p>
@@ -83,13 +83,13 @@ export const UnifiedResults: React.FC<UnifiedResultsProps> = ({
       {/* Communications Section */}
       <div className="card">
         <div className="flex justify-between items-center">
-          <h2 className="text-xl font-bold">
+          <h2 className="text-xl font-bold text-slate-100">
             Generated Communications ({communications.length})
           </h2>
           {onRefreshCommunications && (
             <button
               onClick={onRefreshCommunications}
-              className="text-primary-600 hover:text-primary-700 font-medium text-sm"
+              className="text-primary-400 hover:text-primary-300 font-medium text-sm transition-colors"
             >
               🔄 Regenerate
             </button>
@@ -112,8 +112,8 @@ export const UnifiedResults: React.FC<UnifiedResultsProps> = ({
         <div className="card">
           <div className="flex justify-between items-center mb-4">
             <div>
-              <h2 className="text-xl font-bold">Campaign Creatives</h2>
-              <p className="text-sm text-gray-600 mt-1">
+              <h2 className="text-xl font-bold text-slate-100">Campaign Creatives</h2>
+              <p className="text-sm text-slate-400 mt-1">
                 Generate AI-powered creative images for your campaign
               </p>
             </div>
@@ -135,7 +135,7 @@ export const UnifiedResults: React.FC<UnifiedResultsProps> = ({
           {creativesLoading && (
             <div className="text-center py-8">
               <LoadingSpinner size="md" />
-              <p className="text-gray-600 mt-4">
+              <p className="text-slate-400 mt-4">
                 Generating creative images... (3-5 seconds)
               </p>
             </div>
@@ -158,7 +158,7 @@ export const UnifiedResults: React.FC<UnifiedResultsProps> = ({
 
           {/* Empty Creative State */}
           {!creativesLoading && creatives.length === 0 && (
-            <div className="text-center py-8 text-gray-500">
+            <div className="text-center py-8 text-slate-500">
               <div className="text-4xl mb-2">🎨</div>
               <p>No creative images generated yet</p>
               <p className="text-sm mt-1">Click the button above to generate</p>

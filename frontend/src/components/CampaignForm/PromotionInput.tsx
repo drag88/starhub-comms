@@ -57,16 +57,16 @@ export const PromotionInput: React.FC<PromotionInputProps> = ({
       <button
         type="button"
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center justify-between p-3 mb-3 bg-gray-50 hover:bg-gray-100 rounded-lg border border-gray-200 transition-colors"
+        className="w-full flex items-center justify-between p-3 mb-3 bg-slate-800/50 hover:bg-slate-700/50 rounded-lg border border-slate-700 transition-colors"
       >
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-gray-700">Promotion Details</span>
-          <span className="text-xs text-gray-500">(Optional)</span>
+          <span className="text-sm font-medium text-slate-100">Promotion Details</span>
+          <span className="text-xs text-slate-400">(Optional)</span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-600">{isExpanded ? 'Hide' : 'Show'}</span>
+          <span className="text-sm text-slate-400">{isExpanded ? 'Hide' : 'Show'}</span>
           <svg
-            className={`w-4 h-4 text-gray-600 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
+            className={`w-4 h-4 text-slate-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"

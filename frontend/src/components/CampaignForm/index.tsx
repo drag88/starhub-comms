@@ -154,12 +154,12 @@ export const CampaignForm: React.FC<CampaignFormProps> = ({
 
   return (
     <div className="card">
-      <h2 className="text-xl font-bold mb-6">Create Campaign</h2>
+      <h2 className="text-xl font-bold mb-6 text-slate-100">Create Campaign</h2>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         {/* Campaign Information Section */}
-        <section className="border border-gray-300 rounded-lg p-5 bg-white">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b border-gray-200">
+        <section className="border border-slate-700/50 rounded-lg p-5 bg-slate-800/30">
+          <h3 className="text-lg font-semibold text-slate-100 mb-4 pb-2 border-b border-slate-700/50">
             Campaign Information
           </h3>
           <div className="space-y-4">
@@ -189,8 +189,8 @@ export const CampaignForm: React.FC<CampaignFormProps> = ({
         </section>
 
         {/* Target Cohorts Section */}
-        <section className="border border-gray-300 rounded-lg p-5 bg-white">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b border-gray-200">
+        <section className="border border-slate-700/50 rounded-lg p-5 bg-slate-800/30">
+          <h3 className="text-lg font-semibold text-slate-100 mb-4 pb-2 border-b border-slate-700/50">
             Target Cohorts
           </h3>
           <CohortSelector
@@ -202,8 +202,8 @@ export const CampaignForm: React.FC<CampaignFormProps> = ({
         </section>
 
         {/* Promotion & Customization Section */}
-        <section className="border border-gray-300 rounded-lg p-5 bg-white">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b border-gray-200">
+        <section className="border border-slate-700/50 rounded-lg p-5 bg-slate-800/30">
+          <h3 className="text-lg font-semibold text-slate-100 mb-4 pb-2 border-b border-slate-700/50">
             Promotion & Customization
           </h3>
           <div className="space-y-6">
@@ -211,7 +211,7 @@ export const CampaignForm: React.FC<CampaignFormProps> = ({
               value={watch('promotion_details')}
               onChange={(value) => setValue('promotion_details', value)}
             />
-            <div className="pt-4 border-t border-gray-200">
+            <div className="pt-4 border-t border-slate-700/50">
               <CustomizationPanel
                 value={watch('customization')}
                 onChange={(value) => setValue('customization', value)}
@@ -222,26 +222,26 @@ export const CampaignForm: React.FC<CampaignFormProps> = ({
 
         {/* Creative Generation Option - Only show for Email/Push channels */}
         {supportsCreatives && (
-          <section className="border border-gray-300 rounded-lg p-5 bg-white">
+          <section className="border border-slate-700/50 rounded-lg p-5 bg-slate-800/30">
             <div className="flex items-start gap-3">
               <input
                 type="checkbox"
                 id="generateCreatives"
                 checked={generateCreatives}
                 onChange={(e) => setGenerateCreatives(e.target.checked)}
-                className="mt-1 h-5 w-5 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                className="mt-1 h-5 w-5 text-primary-500 border-slate-600 rounded focus:ring-primary-500 bg-slate-900"
               />
               <div className="flex-1">
                 <label htmlFor="generateCreatives" className="flex items-center gap-2 cursor-pointer">
-                  <span className="text-lg font-semibold text-gray-900">
+                  <span className="text-lg font-semibold text-slate-100">
                     🎨 Generate Creative Images
                   </span>
                 </label>
-                <p className="text-sm text-gray-600 mt-1">
+                <p className="text-sm text-slate-400 mt-1">
                   Automatically generate AI-powered creative images for your {selectedChannel} campaign.
                   This will create 3 image variants optimized for your channel.
                 </p>
-                <div className="mt-2 text-xs text-gray-500 bg-gray-50 p-2 rounded">
+                <div className="mt-2 text-xs text-slate-400 bg-slate-800/50 p-2 rounded border border-slate-700/50">
                   ⏱️ Note: This may add 30-60 seconds to generation time
                 </div>
               </div>
@@ -250,18 +250,18 @@ export const CampaignForm: React.FC<CampaignFormProps> = ({
         )}
 
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+          <div className="bg-red-900/20 border border-red-800/50 text-red-200 px-4 py-3 rounded">
             <div className="font-semibold mb-1">Validation error</div>
             <div className="text-sm whitespace-pre-line">{error}</div>
           </div>
         )}
 
-        <div className="pt-6 border-t-2 border-gray-300 mt-8">
+        <div className="pt-6 border-t border-slate-700/50 mt-8">
           <Button
             type="submit"
             variant="primary"
             loading={loading}
-            className="w-full py-4 text-xl font-bold shadow-lg"
+            className="w-full py-4 text-xl font-bold shadow-lg shadow-primary-500/20"
           >
             Generate Communications
           </Button>

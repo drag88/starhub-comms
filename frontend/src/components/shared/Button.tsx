@@ -17,22 +17,14 @@ export const Button: React.FC<ButtonProps> = ({
   const baseClasses = 'px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed';
 
   const variantClasses = {
-    primary: 'btn-primary text-white',
-    secondary: 'bg-gray-200 text-gray-800 hover:bg-gray-300',
-    danger: 'bg-red-600 text-white hover:bg-red-700',
-  };
-
-  const getStyle = () => {
-    if (variant === 'primary') {
-      return { backgroundColor: '#00A651', color: 'white' };
-    }
-    return undefined;
+    primary: 'btn-primary',
+    secondary: 'btn-secondary',
+    danger: 'bg-red-600 text-white hover:bg-red-700 shadow-lg shadow-red-600/20',
   };
 
   return (
     <button
       className={`${baseClasses} ${variantClasses[variant]} ${className}`}
-      style={getStyle()}
       disabled={disabled || loading}
       {...props}
     >

@@ -28,8 +28,8 @@ export const ChannelSelector: React.FC<ChannelSelectorProps> = ({
             onClick={() => onChange(channel.value)}
             className={`p-4 border-2 rounded-lg transition-all ${
               value === channel.value
-                ? 'border-primary-600 bg-primary-50'
-                : 'border-gray-300 bg-white hover:border-primary-300'
+                ? 'border-primary-500 bg-primary-900/30 text-primary-100 shadow-glow'
+                : 'border-slate-700 bg-slate-800/50 text-slate-300 hover:border-primary-500/50 hover:bg-slate-800 hover:text-white'
             }`}
           >
             <div className="text-2xl mb-2">{channel.icon}</div>

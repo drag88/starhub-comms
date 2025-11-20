@@ -43,24 +43,24 @@ export const CommunicationCard: React.FC<CommunicationCardProps> = ({
   };
 
   return (
-    <div className={`card ${isTop ? 'border-2 border-green-500' : ''}`}>
+    <div className={`card ${isTop ? 'border-2 border-primary-500 shadow-glow' : ''}`}>
       {/* Header */}
       <div className="flex justify-between items-center mb-3">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-semibold text-gray-700">
+          <span className="text-sm font-semibold text-slate-400">
             Variation {communication.variation_number}
           </span>
           <RecommendationBadge score={communication.recommendation_score} isTop={isTop} />
         </div>
         <div className="flex items-center gap-2">
           {selected && (
-            <span className="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded font-medium">
+            <span className="px-2 py-0.5 bg-primary-900/30 text-primary-400 text-xs rounded font-medium border border-primary-500/30">
               Selected
             </span>
           )}
           <button
             onClick={() => setExpanded(!expanded)}
-            className="text-gray-500 hover:text-gray-700 text-xs"
+            className="text-slate-500 hover:text-slate-300 text-xs transition-colors"
           >
             {expanded ? '▲ Less' : '▼ More'}
           </button>
@@ -68,29 +68,29 @@ export const CommunicationCard: React.FC<CommunicationCardProps> = ({
       </div>
 
       {/* Communication Text */}
-      <div className="mb-3 p-3 bg-gray-50 rounded border border-gray-200">
-        <p className="text-sm text-gray-900 whitespace-pre-wrap">{text}</p>
+      <div className="mb-3 p-3 bg-slate-800/50 rounded border border-slate-700/50">
+        <p className="text-sm text-slate-100 whitespace-pre-wrap">{text}</p>
       </div>
 
       {/* Score Breakdown - Always Visible */}
-      <div className="mb-3 pb-3 border-b border-gray-200">
+      <div className="mb-3 pb-3 border-b border-slate-700/50">
         <ScoreBreakdown breakdown={communication.score_breakdown} />
       </div>
 
       {/* Expandable Details */}
       {expanded && (
         <div className="space-y-2 mb-3">
-          <div className="p-2.5 rounded bg-green-50 border border-green-200">
-            <div className="text-xs font-semibold text-green-900 mb-1">Why This Works</div>
-            <p className="text-xs text-green-800 leading-relaxed">{communication.recommendation_reasoning}</p>
+          <div className="p-2.5 rounded bg-primary-900/20 border border-primary-500/30">
+            <div className="text-xs font-semibold text-primary-400 mb-1">Why This Works</div>
+            <p className="text-xs text-primary-200 leading-relaxed">{communication.recommendation_reasoning}</p>
           </div>
 
           {communication.compliance_notes && (
-            <div className="p-2.5 rounded bg-yellow-50 border border-yellow-200 flex gap-2">
-              <span className="text-yellow-600 text-xs">⚠️</span>
+            <div className="p-2.5 rounded bg-yellow-900/20 border border-yellow-500/30 flex gap-2">
+              <span className="text-yellow-500 text-xs">⚠️</span>
               <div className="flex-1">
-                <div className="text-xs font-semibold text-yellow-900 mb-0.5">Compliance Notes</div>
-                <p className="text-xs text-yellow-800 leading-relaxed">{communication.compliance_notes}</p>
+                <div className="text-xs font-semibold text-yellow-500 mb-0.5">Compliance Notes</div>
+                <p className="text-xs text-yellow-200 leading-relaxed">{communication.compliance_notes}</p>
               </div>
             </div>
           )}
@@ -101,42 +101,42 @@ export const CommunicationCard: React.FC<CommunicationCardProps> = ({
       <div className="flex flex-wrap gap-1.5">
         <button
           onClick={handleCopy}
-          className="px-2.5 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded transition-colors"
+          className="px-2.5 py-1 text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 rounded transition-colors border border-slate-700"
         >
           {copied ? '✓ Copied' : '📋 Copy'}
         </button>
         <button
           onClick={() => onEdit(communication)}
-          className="px-2.5 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded transition-colors"
+          className="px-2.5 py-1 text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 rounded transition-colors border border-slate-700"
         >
           ✏️ Edit
         </button>
         <button
           onClick={handleSelect}
-          className="px-2.5 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded transition-colors"
+          className="px-2.5 py-1 text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 rounded transition-colors border border-slate-700"
         >
           {selected ? '⭐ Selected' : '☆ Select'}
         </button>
         <div className="relative group">
-          <button className="px-2.5 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded transition-colors">
+          <button className="px-2.5 py-1 text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 rounded transition-colors border border-slate-700">
             📥 Export
           </button>
-          <div className="absolute left-0 mt-1 hidden group-hover:block bg-white border border-gray-300 rounded shadow-lg z-10 min-w-[120px]">
+          <div className="absolute left-0 mt-1 hidden group-hover:block bg-slate-800 border border-slate-700 rounded shadow-lg z-10 min-w-[120px]">
             <button
               onClick={() => exportCommunication(communication, 'txt', campaign)}
-              className="block w-full text-left px-3 py-1.5 hover:bg-gray-100 text-xs"
+              className="block w-full text-left px-3 py-1.5 hover:bg-slate-700 text-slate-300 text-xs"
             >
               Export as TXT
             </button>
             <button
               onClick={() => exportCommunication(communication, 'csv', campaign)}
-              className="block w-full text-left px-3 py-1.5 hover:bg-gray-100 text-xs"
+              className="block w-full text-left px-3 py-1.5 hover:bg-slate-700 text-slate-300 text-xs"
             >
               Export as CSV
             </button>
             <button
               onClick={() => exportCommunication(communication, 'json', campaign)}
-              className="block w-full text-left px-3 py-1.5 hover:bg-gray-100 text-xs"
+              className="block w-full text-left px-3 py-1.5 hover:bg-slate-700 text-slate-300 text-xs"
             >
               Export as JSON
             </button>

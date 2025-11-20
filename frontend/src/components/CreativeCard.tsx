@@ -33,7 +33,7 @@ export const CreativeCard: React.FC<CreativeCardProps> = ({
   };
 
   return (
-    <div className={`card ${isSelected ? 'border-2 border-green-500' : ''}`}>
+    <div className={`card ${isSelected ? 'border-2 border-primary-500 shadow-glow' : ''}`}>
       {/* Image Preview - Clickable to view full size */}
       <div 
         className="relative cursor-pointer group" 
@@ -56,8 +56,8 @@ export const CreativeCard: React.FC<CreativeCardProps> = ({
           role="img"
         />
         {/* Hover overlay */}
-        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black bg-opacity-30 rounded-t">
-          <div className="bg-white text-gray-900 px-3 py-2 rounded-lg font-semibold text-sm">
+        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-slate-950 bg-opacity-60 rounded-t backdrop-blur-sm">
+          <div className="bg-slate-800 text-slate-100 px-3 py-2 rounded-lg font-semibold text-sm border border-slate-600">
             🔍 Click to view full size
           </div>
         </div>
@@ -66,7 +66,7 @@ export const CreativeCard: React.FC<CreativeCardProps> = ({
       {/* Header Section */}
       <div className="flex justify-between items-center p-3">
         <RecommendationBadge score={creative.recommendation_score} />
-        <span className="text-sm font-semibold text-gray-700">
+        <span className="text-sm font-semibold text-slate-300">
           Variant {creative.variant_number}
         </span>
       </div>
@@ -95,10 +95,10 @@ export const CreativeCard: React.FC<CreativeCardProps> = ({
 
       {/* Score Reasoning */}
       <details className="px-3 pb-3">
-        <summary className="cursor-pointer text-sm font-medium text-gray-700 hover:text-gray-900">
+        <summary className="cursor-pointer text-sm font-medium text-slate-300 hover:text-slate-100 transition-colors">
           Score Details
         </summary>
-        <p className="text-xs text-gray-600 mt-2 leading-relaxed">
+        <p className="text-xs text-slate-400 mt-2 leading-relaxed">
           {creative.score_reasoning}
         </p>
       </details>

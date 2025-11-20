@@ -206,7 +206,7 @@ function App() {
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <LoadingSpinner size="lg" />
-          <p className="mt-4 text-gray-600">Loading application...</p>
+          <p className="mt-4 text-slate-400">Loading application...</p>
         </div>
       </div>
     );
@@ -217,8 +217,8 @@ function App() {
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center max-w-md">
           <div className="text-6xl mb-4">⚠️</div>
-          <h2 className="text-xl font-bold text-gray-900 mb-2">Connection Error</h2>
-          <p className="text-gray-600 mb-4">{error}</p>
+          <h2 className="text-xl font-bold text-slate-100 mb-2">Connection Error</h2>
+          <p className="text-slate-400 mb-4">{error}</p>
           <button
             onClick={loadConfigurationData}
             className="btn-primary"
@@ -231,25 +231,25 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 py-2">
+    <div className="min-h-screen">
+      <header className="sticky top-0 z-50 backdrop-blur-md bg-slate-950/70 border-b border-slate-800/50">
+        <div className="max-w-7xl mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">
-                StarHub Customer Communications Generator
+              <h1 className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-400">
+                StarHub <span className="text-primary-500">Customer Communications</span>
               </h1>
             </div>
             <img 
               src={starhubLogo} 
               alt="StarHub Logo" 
-              className="h-10 w-auto"
+              className="h-8 w-auto brightness-0 invert"
             />
           </div>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 pt-2 pb-8">
+      <main className="max-w-7xl mx-auto px-4 pt-8 pb-12">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <div>
             <CampaignForm
@@ -262,12 +262,12 @@ function App() {
 
           <div className="space-y-6">
             {generationError && (
-              <div className="card bg-red-50 border border-red-200 text-red-700 p-4">
+              <div className="card bg-red-900/20 border border-red-800/50 text-red-200 p-4">
                 <div className="font-semibold mb-1">Generation Error</div>
                 <div className="text-sm">{generationError}</div>
                 <button
                   onClick={() => setGenerationError(null)}
-                  className="mt-2 text-sm underline"
+                  className="mt-2 text-sm underline hover:text-white"
                 >
                   Dismiss
                 </button>
