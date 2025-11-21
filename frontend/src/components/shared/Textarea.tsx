@@ -19,25 +19,38 @@ export const Textarea: React.FC<TextareaProps> = ({
   const charCount = typeof value === 'string' ? value.length : 0;
 
   return (
-    <div className="w-full">
+    <div className="w-full space-y-1.5">
       {label && (
-        <label className="form-label">
+        <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block ml-1">
           {label}
         </label>
       )}
-      <textarea
-        className={`input-field ${error ? 'border-danger' : ''} ${className}`}
-        maxLength={maxLength}
-        value={value}
-        {...props}
-      />
-      <div className="flex justify-between items-center mt-1">
-        {error && (
-          <p className="form-error">{error}</p>
-        )}
+      <div className="relative group">
+        <div className="absolute -inset-0.5 bg-gradient-to-r from-primary/20 to-blue-500/20 rounded-lg blur opacity-0 group-focus-within:opacity-100 transition duration-500" />
+        <textarea
+          className={`
+            relative w-full bg-zinc-900/80 border rounded-lg px-4 py-3 text-sm text-zinc-200 placeholder:text-zinc-600
+            transition-all duration-200 min-h-[100px] resize-y
+            focus:outline-none focus:ring-1 focus:ring-primary/50
+            ${error 
+              ? 'border-red-500/50 focus:border-red-500' 
+              : 'border-white/10 focus:border-primary/50 hover:border-white/20'
+            }
+            ${className}
+          `}
+          maxLength={maxLength}
+          value={value}
+          {...props}
+        />
+      </div>
+      <div className="flex justify-between items-center px-1">
+        {error ? (
+          <p className="text-xs text-red-400">{error}</p>
+        ) : <div />}
+        
         {showCharCount && (
-          <p className={`text-sm ${charCount > (maxLength || Infinity) ? 'text-danger' : 'text-slate-500'} ml-auto`}>
-            {charCount}{maxLength ? `/${maxLength}` : ''} characters
+          <p className={`text-[10px] ${charCount > (maxLength || Infinity) ? 'text-red-400' : 'text-zinc-600'} font-mono`}>
+            {charCount}{maxLength ? ` / ${maxLength}` : ''}
           </p>
         )}
       </div>

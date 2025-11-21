@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import type { PromotionDetails } from '/Users/asreenivas/Library/CloudStorage/OneDrive-StarHubLtd/02_Data_Analytics/Scripts/29. Customer Comms Generator/frontend/src/types/campaign';
-import { Input } from '/Users/asreenivas/Library/CloudStorage/OneDrive-StarHubLtd/02_Data_Analytics/Scripts/29. Customer Comms Generator/frontend/src/components/shared/Input';
-import { Textarea } from '/Users/asreenivas/Library/CloudStorage/OneDrive-StarHubLtd/02_Data_Analytics/Scripts/29. Customer Comms Generator/frontend/src/components/shared/Textarea';
+import { ChevronDown, Tag } from 'lucide-react';
+import type { PromotionDetails } from '@/types/campaign';
+import { Input } from '@/components/shared/Input';
+import { Textarea } from '@/components/shared/Textarea';
 
 interface PromotionInputProps {
   value?: PromotionDetails;
@@ -53,31 +54,31 @@ export const PromotionInput: React.FC<PromotionInputProps> = ({
   };
 
   return (
-    <div>
+    <div className="border border-white/5 rounded-lg overflow-hidden">
       <button
         type="button"
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center justify-between p-3 mb-3 bg-slate-800/50 hover:bg-slate-700/50 rounded-lg border border-slate-700 transition-colors"
+        className={`
+          w-full flex items-center justify-between p-4 transition-all duration-200
+          ${isExpanded ? 'bg-white/5 border-b border-white/5' : 'hover:bg-white/5 bg-transparent'}
+        `}
       >
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-slate-100">Promotion Details</span>
-          <span className="text-xs text-slate-400">(Optional)</span>
+        <div className="flex items-center gap-3">
+          <div className={`p-1.5 rounded ${isExpanded ? 'bg-primary/20 text-primary' : 'bg-zinc-800 text-zinc-400'}`}>
+            <Tag className="w-4 h-4" />
+          </div>
+          <div className="text-left">
+            <span className="text-sm font-bold text-zinc-200 block uppercase tracking-wide">Promotion Configuration</span>
+            <span className="text-xs text-zinc-500">Optional details regarding pricing and offers</span>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-slate-400">{isExpanded ? 'Hide' : 'Show'}</span>
-          <svg
-            className={`w-4 h-4 text-slate-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-          </svg>
-        </div>
+        <ChevronDown
+          className={`w-5 h-5 text-zinc-500 transition-transform duration-300 ${isExpanded ? 'rotate-180 text-primary' : ''}`}
+        />
       </button>
 
       {isExpanded && (
-        <div className="space-y-4">
+        <div className="p-6 space-y-6 bg-black/20">
           <Input
             label="Promotion Name"
             placeholder="e.g., Unlimited Data Bundle Promo"
@@ -85,7 +86,7 @@ export const PromotionInput: React.FC<PromotionInputProps> = ({
             onChange={(e) => updateField('promotion_name', e.target.value)}
           />
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Input
               label="Monthly Price"
               type="number"
@@ -103,7 +104,7 @@ export const PromotionInput: React.FC<PromotionInputProps> = ({
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Input
               label="Discount (%)"
               type="number"
@@ -137,7 +138,7 @@ export const PromotionInput: React.FC<PromotionInputProps> = ({
             onChange={(e) => updateField('terms_conditions', e.target.value)}
           />
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Input
               label="Validity Start"
               type="date"

@@ -9,14 +9,14 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import type { WizardStepProps } from './types';
+import { WizardSection } from '@/components/wizard/WizardSection';
 
 export function StepBasics({ data, updateData }: WizardStepProps) {
   const { objectives, cohorts } = useConfig();
 
   return (
     <div className="space-y-6">
-      <div className="space-y-4 border rounded-md p-4 bg-muted/20 w-full max-w-3xl mx-auto">
-        <h4 className="font-medium text-lg">Campaign Information</h4>
+      <WizardSection title="Campaign Information">
         <div className="space-y-2">
           <Label htmlFor="campaign_name">Campaign Name</Label>
           <Input
@@ -29,10 +29,9 @@ export function StepBasics({ data, updateData }: WizardStepProps) {
             Give your campaign a clear, descriptive name that reflects its purpose
           </p>
         </div>
-      </div>
+      </WizardSection>
 
-      <div className="space-y-4 border rounded-md p-4 bg-muted/20 w-full max-w-3xl mx-auto">
-        <h4 className="font-medium text-lg">Campaign Objective</h4>
+      <WizardSection title="Campaign Objective">
         <div className="space-y-2">
           <Label htmlFor="objective">Select Objective</Label>
           <Select
@@ -56,10 +55,9 @@ export function StepBasics({ data, updateData }: WizardStepProps) {
             </p>
           )}
         </div>
-      </div>
+      </WizardSection>
 
-      <div className="space-y-4 border rounded-md p-4 bg-muted/20 w-full max-w-3xl mx-auto">
-        <h4 className="font-medium text-lg">Target Audience</h4>
+      <WizardSection title="Target Audience">
         <div className="space-y-2">
           <Label htmlFor="cohort">Select Cohort</Label>
           <Select
@@ -83,7 +81,7 @@ export function StepBasics({ data, updateData }: WizardStepProps) {
             </p>
           )}
         </div>
-      </div>
+      </WizardSection>
     </div>
   );
 }

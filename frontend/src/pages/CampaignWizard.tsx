@@ -100,38 +100,41 @@ export function CampaignWizard() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto py-8 px-6">
-      <div className="mb-8">
+    <div className="w-full py-8 space-y-8">
+      <div>
         <h1 className="text-3xl font-bold tracking-tight">New Campaign</h1>
         <p className="text-muted-foreground">
           Create a new marketing campaign in 3 simple steps.
         </p>
       </div>
 
-      <div className="flex items-center justify-between mb-8 px-2">
+      <div className="flex items-center w-full">
         {STEPS.map((step, index) => (
-          <div key={step} className="flex items-center">
-            <div className={`flex items-center justify-center w-8 h-8 rounded-full border-2 ${
+          <div 
+            key={step} 
+            className={`flex items-center ${index < STEPS.length - 1 ? 'flex-1' : ''}`}
+          >
+            <div className={`flex items-center justify-center w-8 h-8 rounded-full border-2 shrink-0 ${
               index <= currentStep 
                 ? 'border-primary bg-primary text-primary-foreground' 
                 : 'border-muted text-muted-foreground'
             }`}>
               {index + 1}
             </div>
-            <span className={`ml-2 text-sm font-medium ${
+            <span className={`ml-2 text-sm font-medium whitespace-nowrap ${
               index <= currentStep ? 'text-foreground' : 'text-muted-foreground'
             }`}>
               {step}
             </span>
             {index < STEPS.length - 1 && (
-              <Separator className="w-12 mx-4 hidden sm:block" />
+              <Separator className="mx-4 hidden sm:block flex-1 w-auto" />
             )}
           </div>
         ))}
       </div>
 
       <Card className="w-full">
-        <CardHeader>
+        <CardHeader className="px-4 py-6">
           <CardTitle>{STEPS[currentStep]}</CardTitle>
           <CardDescription>
             {currentStep === 0 && "Let's start with the basics of your campaign."}
@@ -139,7 +142,7 @@ export function CampaignWizard() {
             {currentStep === 2 && "Review your settings before generating content."}
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-4 pb-8">
           {currentStep === 0 && (
             <StepBasics data={formData} updateData={updateData} />
           )}
@@ -152,7 +155,7 @@ export function CampaignWizard() {
         </CardContent>
       </Card>
 
-      <div className="flex justify-between mt-6">
+      <div className="flex justify-between">
         <Button 
           variant="outline" 
           onClick={handleBack} 

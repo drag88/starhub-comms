@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import type { Creative } from '../types/creative';
-import type { Campaign } from '../types/campaign';
+import { Image, RotateCcw, Sparkles, AlertCircle } from 'lucide-react';
+import type { Creative } from '@/types/creative';
+import type { Campaign } from '@/types/campaign';
 import { CreativeCard } from './CreativeCard';
 import { Button } from './shared/Button';
 import { LoadingSpinner } from './shared/LoadingSpinner';
 import { ImageViewerModal } from './shared/ImageViewerModal';
-import { creativeAPI } from '../services/api';
+import { creativeAPI } from '@/services/api';
 
 interface CreativeGalleryProps {
   creatives: Creative[];
@@ -54,9 +55,13 @@ export const CreativeGallery: React.FC<CreativeGalleryProps> = ({
   // Error state
   if (error) {
     return (
-      <div className="card text-center p-6">
-        <div className="text-4xl mb-2">⚠️</div>
-        <p className="text-gray-600 mb-4">{error}</p>
+      <div className="glass-panel p-8 text-center rounded-xl">
+        <div className="flex justify-center mb-4">
+          <div className="p-3 rounded-full bg-red-500/10">
+            <AlertCircle className="w-8 h-8 text-red-400" />
+          </div>
+        </div>
+        <p className="text-zinc-300 mb-6">{error}</p>
         <Button
           onClick={() => {
             setError(null);
@@ -73,13 +78,12 @@ export const CreativeGallery: React.FC<CreativeGalleryProps> = ({
   // Loading State
   if (loading) {
     return (
-      <div className="card text-center p-6">
-        <div role="status" aria-live="polite">
+      <div className="glass-panel p-12 text-center rounded-xl">
+        <div role="status" aria-live="polite" className="flex flex-col items-center">
           <LoadingSpinner size="md" />
-          <p className="text-gray-600 mt-4">
-            Generating creative images... (3-5 seconds)
+          <p className="text-zinc-400 mt-6 animate-pulse font-medium uppercase tracking-widest text-xs">
+            Generating creative assets...
           </p>
-          <span className="sr-only">Generating creative images, please wait</span>
         </div>
       </div>
     );
@@ -91,23 +95,28 @@ export const CreativeGallery: React.FC<CreativeGalleryProps> = ({
     const supportsCreatives = channel === 'email' || channel === 'push' || channel.includes('email') || channel.includes('push');
     
     return (
-      <div className="card text-center p-6">
-        <h3 className="text-lg font-semibold mb-2">Campaign Creatives</h3>
+      <div className="glass-panel p-12 text-center rounded-xl border-dashed border-2 border-zinc-800/50">
+        <div className="flex justify-center mb-4">
+          <div className="p-4 rounded-full bg-zinc-900 border border-zinc-800">
+            <Image className="w-8 h-8 text-zinc-600" />
+          </div>
+        </div>
+        <h3 className="text-lg font-bold text-white uppercase tracking-wide mb-2">Campaign Creatives</h3>
         {supportsCreatives ? (
           <>
-            <p className="text-gray-600 mb-4">
-              Generate AI-powered creative images for your campaign
+            <p className="text-zinc-400 mb-6 max-w-md mx-auto">
+              Generate AI-powered creative images optimized for your {campaign?.channel || 'campaign'} channel.
             </p>
             {onGenerate && (
-              <Button onClick={onGenerate} variant="primary" className="py-3 px-6 text-lg">
-                🎨 Generate Creative Images
+              <Button onClick={onGenerate} variant="primary" className="mx-auto">
+                <Sparkles className="w-4 h-4" />
+                Generate Visual Assets
               </Button>
             )}
           </>
         ) : (
-          <p className="text-gray-600">
-            Creative images are only available for Email and Push Notification campaigns.
-            Current channel: <strong>{campaign?.channel || 'Unknown'}</strong>
+          <p className="text-zinc-500 max-w-md mx-auto">
+            Creative image generation is currently available for Email and Push Notification channels only.
           </p>
         )}
       </div>
@@ -124,24 +133,32 @@ export const CreativeGallery: React.FC<CreativeGalleryProps> = ({
   // Results State
   return (
     <>
-      <div className="card">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-semibold">Campaign Creatives</h3>
-          <div className="flex gap-2">
+      <div className="glass-panel p-6 rounded-xl">
+        <div className="flex justify-between items-center mb-6 pb-6 border-b border-white/5">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded bg-primary/10 border border-primary/20">
+              <Image className="w-5 h-5 text-primary" />
+            </div>
+            <h3 className="text-sm font-bold text-white uppercase tracking-widest">
+              Generated Creatives
+            </h3>
+          </div>
+          <div className="flex gap-3">
             {onGenerate && (
-              <Button onClick={onGenerate} variant="primary" className="text-sm py-2 px-4">
-                🎨 Generate New Creatives
+              <Button onClick={onGenerate} variant="primary" className="text-xs px-4">
+                <Sparkles className="w-3 h-3" />
+                Generate New
               </Button>
             )}
             {onRefresh && (
-              <Button onClick={onRefresh} variant="secondary" className="text-sm py-2 px-3">
-                🔄 Refresh
+              <Button onClick={onRefresh} variant="secondary" className="text-xs px-3">
+                <RotateCcw className="w-3 h-3" />
               </Button>
             )}
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {sortedCreatives.map((creative, index) => (
             <CreativeCard
               key={creative.creative_id}
