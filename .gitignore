@@ -57,3 +57,7 @@ dev/active/
 # Logs
 *.log
 logs/
+
+# Node
+node_modules/
+package-lock.json
