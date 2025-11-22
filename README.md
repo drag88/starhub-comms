@@ -49,67 +49,56 @@ The StarHub Customer Communications Generator is an intelligent system that help
 
 ### Prerequisites
 
-- **Python 3.10 or higher**
+- **Python 3.11 or higher** (automatically managed by UV)
 - **Node.js 18 or higher**
-- **uv package manager** - Install: `curl -LsSf https://astral.sh/uv/install.sh | sh`
+- **UV package manager** - Install: `curl -LsSf https://astral.sh/uv/install.sh | sh`
 - **Anthropic API Key** - Get from https://console.anthropic.com/
+- **FAL AI API Key** - Get from https://fal.ai/ (for creative generation)
 
-### Installation
+### Automated Setup (Recommended)
 
-**1. Clone or Navigate to Project:**
 ```bash
+# 1. Clone or navigate to project
 cd /path/to/customer-comms-generator
-```
 
-**2. Backend Setup:**
-```bash
+# 2. Run automated setup
+./setup.sh
+
+# 3. Configure API keys
 cd backend
+# Edit .env and add:
+#   ANTHROPIC_API_KEY=your_key_here
+#   FAL_KEY=your_fal_key_here
 
-# Create virtual environment
-uv venv
-
-# Activate virtual environment
-source .venv/bin/activate  # macOS/Linux
-# OR
-.venv\Scripts\activate     # Windows
-
-# Install dependencies
-uv pip install -e ".[dev]"
-
-# Create environment file
-cp .env.example .env
-
-# Edit .env and add your API key
-# ANTHROPIC_API_KEY=your_key_here
-```
-
-**3. Frontend Setup:**
-```bash
-cd frontend
-
-# Install dependencies
-npm install
-
-# Create environment file (optional - defaults to localhost:8000)
-echo "VITE_API_URL=http://localhost:8000" > .env
-```
-
-### Running the Application
-
-**Option 1: Quick Start (Recommended)**
-```bash
-# From project root
+# 4. Start the application
 ./start-all.sh
 ```
 
-**Option 2: Manual Start**
-```bash
-# Terminal 1 - Backend
-./start-backend.sh
+That's it! The setup script handles all dependency installation and configuration.
 
-# Terminal 2 - Frontend
-./start-frontend.sh
+### Manual Setup (Advanced Users)
+
+For detailed setup instructions, troubleshooting, and UV usage guide, see **[SETUP.md](./SETUP.md)**.
+
+**Quick manual setup:**
+```bash
+# Backend
+cd backend
+uv sync --dev              # Install all dependencies (no venv activation needed!)
+cp .env.example .env       # Create environment file
+# Edit .env with your API keys
+uv run alembic upgrade head  # Initialize database
+
+# Frontend
+cd frontend
+npm install
+
+# Start
+./start-backend.sh  # Terminal 1
+./start-frontend.sh # Terminal 2
 ```
+
+**Why UV?** UV is 10-100x faster than pip and ensures reproducible builds across all machines via the `uv.lock` file.
 
 ### Access Points
 

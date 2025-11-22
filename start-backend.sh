@@ -10,19 +10,16 @@ echo "================================================"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR/backend"
 
-# Check if virtual environment exists
-if [ ! -d ".venv" ]; then
-    echo "❌ Virtual environment not found!"
+# Check if uv.lock exists (indicates UV setup)
+if [ ! -f "uv.lock" ]; then
+    echo "❌ UV lockfile not found!"
     echo "Please run setup first:"
     echo "  cd backend"
-    echo "  uv venv"
-    echo "  uv pip install -e \".[dev]\""
+    echo "  uv sync --dev"
     exit 1
 fi
 
-# Activate virtual environment
-echo "✅ Activating virtual environment..."
-source .venv/bin/activate
+echo "✅ Using UV for dependency management..."
 
 # Check if .env exists
 if [ ! -f ".env" ]; then
